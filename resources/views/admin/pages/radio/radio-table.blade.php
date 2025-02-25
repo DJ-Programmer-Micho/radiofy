@@ -28,6 +28,11 @@
                     {{ session('xml_update') }}
                 </div>
             @endif
+            @if (session()->has('xml_reload'))
+                <div class="alert alert-success mt-2">
+                    {{ session('xml_reload') }}
+                </div>
+            @endif
         </div>
         
         <!-- Radio Table -->
