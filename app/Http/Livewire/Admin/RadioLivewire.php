@@ -289,6 +289,16 @@ class RadioLivewire extends Component
 
     // Save the updated XML file
     if ($dom->save($xmlFilePath)) {
+        if ($dom->save($xmlFilePath)) {
+            session()->flash('xml_update', 'icecast.xml updated successfully.');
+            
+            // Reload Icecast service
+            $output = shell_exec('sudo systemctl reload icecast2 2>&1');
+            // Optionally, log or flash $output if needed
+            session()->flash('xml_reload', 'Icecast reloaded: ' . $output);
+        } else {
+            session()->flash('xml_update', 'Failed to update icecast.xml.');
+        }
         session()->flash('xml_update', 'icecast.xml updated successfully.');
         // Optionally, reload the Icecast service
         // shell_exec('sudo systemctl reload icecast2');
