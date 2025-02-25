@@ -212,7 +212,8 @@ class RadioLivewire extends Component
     public function updateIcecastXml()
 {
     // Path to the XML template
-    $templatePath = resource_path('xml/icecast.xml');
+    $templatePath = '/etc/icecast2/icecast.xml';
+
     
     // Load the template using DOMDocument
     $dom = new \DOMDocument('1.0');
