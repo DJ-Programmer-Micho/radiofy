@@ -211,102 +211,95 @@ class RadioLivewire extends Component
     //************************************** */
     public function updateIcecastXml()
 {
+    // Path to the XML template
+    $templatePath = resource_path('xml/icecast-template.xml');
     
-    // Retrieve all active radio configurations; adjust the query as needed.
+    // Load the template using DOMDocument
+    $dom = new \DOMDocument('1.0');
+    $dom->preserveWhiteSpace = false;
+    $dom->formatOutput = true;
+    if (!$dom->load($templatePath)) {
+        session()->flash('xml_update', 'Failed to load XML template.');
+        return;
+    }
+    
+    // Remove any existing mount nodes if they exist
+    $xpath = new \DOMXPath($dom);
+    $mountNodes = $xpath->query('//icecast/mount');
+    foreach ($mountNodes as $node) {
+        $node->parentNode->removeChild($node);
+    }
+    
+    // Retrieve active radio configurations from the database
     $configs = \App\Models\IcecastConfiguration::where('status', 1)->get();
-
-    // Build the base XML using a heredoc template.
-    $baseXml = <<<XML
-<icecast>
-    <location>Earth</location>
-    <admin>icemaster@localhost</admin>
-    <limits>
-        <clients>100</clients>
-        <sources>2</sources>
-        <queue-size>524288</queue-size>
-        <client-timeout>30</client-timeout>
-        <header-timeout>15</header-timeout>
-        <source-timeout>10</source-timeout>
-        <burst-on-connect>1</burst-on-connect>
-        <burst-size>65535</burst-size>
-    </limits>
-    <authentication>
-        <source-password>hackme</source-password>
-        <relay-password>hackme</relay-password>
-        <admin-user>admin</admin-user>
-        <admin-password>hackme</admin-password>
-    </authentication>
-    <hostname>localhost</hostname>
-    <listen-socket>
-        <port>8000</port>
-    </listen-socket>
-    <http-headers>
-        <header name="Access-Control-Allow-Origin" value="*" />
-    </http-headers>
-    <paths>
-        <basedir>/usr/share/icecast2</basedir>
-        <logdir>/var/log/icecast2</logdir>
-        <webroot>/usr/share/icecast2/web</webroot>
-        <adminroot>/usr/share/icecast2/admin</adminroot>
-        <alias source="/" destination="/status.xsl"/>
-    </paths>
-    <logging>
-        <accesslog>access.log</accesslog>
-        <errorlog>error.log</errorlog>
-        <loglevel>3</loglevel>
-        <logsize>10000</logsize>
-    </logging>
-    <security>
-        <chroot>0</chroot>
-    </security>
-</icecast>
-XML;
-
-    // Load the base XML into a SimpleXMLElement
-    $xml = new \SimpleXMLElement($baseXml);
-
-    // Remove any existing mount nodes if necessary (or simply append new ones)
-    // Here, we assume we want to add new <mount> entries for each radio configuration.
+    
+    // Find the insertion point: insert mounts before the <fileserve> element
+    $fileserveNodes = $dom->getElementsByTagName('fileserve');
+    if ($fileserveNodes->length > 0) {
+        $fileserveNode = $fileserveNodes->item(0);
+        $parentNode = $fileserveNode->parentNode;
+    } else {
+        // If <fileserve> is not found, append to the root element
+        $parentNode = $dom->documentElement;
+    }
+    
+    // For each configuration, create a <mount> element with its children.
     foreach ($configs as $config) {
-        // Create a mount element.
-        $mount = $xml->addChild('mount');
-        $mount->addAttribute('type', 'normal');
+        // Create <mount> element
+        $mount = $dom->createElement('mount');
+        $mount->setAttribute('type', 'normal');
         
-        // Create a mount name based on the radio name (for example, lowercase with underscores)
-        $mountName = '/' . strtolower(str_replace(' ', '_', $config->radio_name));
-        $mount->addChild('mount-name', $mountName);
+        // Create and append <mount-name> element
+        // e.g. Convert radio name to a mount point format (lowercase, underscores, prefixed with "/")
+        $mountNameText = '/' . strtolower(str_replace(' ', '_', $config->radio_name));
+        $mountName = $dom->createElement('mount-name', htmlspecialchars($mountNameText));
+        $mount->appendChild($mountName);
         
-        // Add child elements with dynamic values from the DB.
-        // Adjust which fields go where based on your Icecast XML structure.
-        $mount->addChild('username', 'source'); // You can modify this if needed.
-        $mount->addChild('password', $config->server_password); 
-        $mount->addChild('max-listeners', $config->max_listeners);
-        $mount->addChild('burst-size', $config->burst_size);
+        // Create and append other elements
+        // For instance, you might add username, password, max-listeners, burst-size, etc.
+        $username = $dom->createElement('username', 'source'); // default username
+        $mount->appendChild($username);
         
-        // Optionally add fallback-mount, genre, description, etc.
+        $password = $dom->createElement('password', $config->server_password);
+        $mount->appendChild($password);
+        
+        $maxListeners = $dom->createElement('max-listeners', $config->max_listeners);
+        $mount->appendChild($maxListeners);
+        
+        $burstSize = $dom->createElement('burst-size', $config->burst_size);
+        $mount->appendChild($burstSize);
+        
+        // Optionally, add fallback-mount, genre, description if they exist
         if ($config->fallback_mount) {
-            $mount->addChild('fallback-mount', $config->fallback_mount);
+            $fallbackMount = $dom->createElement('fallback-mount', $config->fallback_mount);
+            $mount->appendChild($fallbackMount);
         }
         if ($config->genre) {
-            $mount->addChild('genre', $config->genre);
+            $genre = $dom->createElement('genre', $config->genre);
+            $mount->appendChild($genre);
         }
         if ($config->description) {
-            $mount->addChild('description', $config->description);
+            $description = $dom->createElement('description', $config->description);
+            $mount->appendChild($description);
         }
+        
+        // Insert the mount node before the <fileserve> node
+        $parentNode->insertBefore($mount, $fileserveNode);
     }
-
-    // Specify the path to the icecast.xml file.
+    
+    // Define the target XML file path (adjust if necessary)
     $xmlFilePath = '/etc/icecast2/icecast.xml';
-
-    // Save the XML file. Ensure the PHP process has write permission to this file.
-    if ($xml->asXML($xmlFilePath)) {
+    
+    // Save the updated XML file
+    if ($dom->save($xmlFilePath)) {
         session()->flash('xml_update', 'icecast.xml updated successfully.');
         
-        // Optionally, you can reload Icecast (uncomment if desired and if permissions allow)
+        // Optionally, reload Icecast service if required:
         // shell_exec('sudo systemctl reload icecast2');
     } else {
-        session()->flash('xml_update', 'Failed to update icecast.xml');
+        session()->flash('xml_update', 'Failed to update icecast.xml.');
     }
 }
+
 
 }
