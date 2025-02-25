@@ -211,69 +211,65 @@ class RadioLivewire extends Component
     //************************************** */
     public function updateIcecastXml()
 {
-    // Path to the XML template
-    $templatePath = '/etc/icecast2/icecast.xml';
-
-    
+    // Path to the XML template in your resources folder
+    $templatePath = resource_path('xml/icecast-template.xml');
+dd(resource_path('xml/icecast-template.xml'));
     // Load the template using DOMDocument
-    $dom = new \DOMDocument('1.0');
+    $dom = new \DOMDocument('1.0', 'UTF-8');
     $dom->preserveWhiteSpace = false;
     $dom->formatOutput = true;
     if (!$dom->load($templatePath)) {
         session()->flash('xml_update', 'Failed to load XML template.');
         return;
     }
-    
-    // Remove any existing mount nodes if they exist
+
+    // Locate the placeholder comment where mountpoints should be inserted
     $xpath = new \DOMXPath($dom);
-    $mountNodes = $xpath->query('//icecast/mount');
-    foreach ($mountNodes as $node) {
-        $node->parentNode->removeChild($node);
-    }
-    
-    // Retrieve active radio configurations from the database
-    $configs = \App\Models\IcecastConfiguration::where('status', 1)->get();
-    
-    // Find the insertion point: insert mounts before the <fileserve> element
-    $fileserveNodes = $dom->getElementsByTagName('fileserve');
-    if ($fileserveNodes->length > 0) {
-        $fileserveNode = $fileserveNodes->item(0);
-        $parentNode = $fileserveNode->parentNode;
+    $placeholderNodes = $xpath->query('//comment()[contains(., "MOUNTS_PLACEHOLDER")]');
+    if ($placeholderNodes->length > 0) {
+        $placeholder = $placeholderNodes->item(0);
+        $parentNode = $placeholder->parentNode;
     } else {
-        // If <fileserve> is not found, append to the root element
+        // If not found, use the document element as a fallback
         $parentNode = $dom->documentElement;
     }
-    
+
+    // Remove the placeholder comment
+    $parentNode->removeChild($placeholder);
+
+    // Retrieve active radio configurations from the database
+    $configs = \App\Models\IcecastConfiguration::where('status', 1)->get();
+
     // For each configuration, create a <mount> element with its children.
     foreach ($configs as $config) {
-        // Create <mount> element
         $mount = $dom->createElement('mount');
         $mount->setAttribute('type', 'normal');
-        
-        // Create and append <mount-name> element
-        // e.g. Convert radio name to a mount point format (lowercase, underscores, prefixed with "/")
+
+        // Generate mount-name from radio name (e.g., /radiolive)
         $mountNameText = '/' . strtolower(str_replace(' ', '_', $config->radio_name));
         $mountName = $dom->createElement('mount-name', htmlspecialchars($mountNameText));
         $mount->appendChild($mountName);
-        
-        // Create and append other elements
-        // For instance, you might add username, password, max-listeners, burst-size, etc.
-        $username = $dom->createElement('username', 'source'); // default username
+
+        // Add username element (if needed)
+        $username = $dom->createElement('username', 'source');
         $mount->appendChild($username);
-        
+
+        // Add password element (using server_password or source_password based on your needs)
         $password = $dom->createElement('password', $config->server_password);
         $mount->appendChild($password);
-        
+
+        // Add max-listeners element
         $maxListeners = $dom->createElement('max-listeners', $config->max_listeners);
         $mount->appendChild($maxListeners);
-        
+
+        // Add burst-size element
         $burstSize = $dom->createElement('burst-size', $config->burst_size);
         $mount->appendChild($burstSize);
-        
-        // Optionally, add fallback-mount, genre, description if they exist
+
+        // Optionally add fallback-mount, genre, description if provided
         if ($config->fallback_mount) {
-            $fallbackMount = $dom->createElement('fallback-mount', $config->fallback_mount);
-            $mount->appendChild($fallbackMount);
+            $fallback = $dom->createElement('fallback-mount', $config->fallback_mount);
+            $mount->appendChild($fallback);
         }
         if ($config->genre) {
             $genre = $dom->createElement('genre', $config->genre);
@@ -283,24 +279,22 @@ class RadioLivewire extends Component
             $description = $dom->createElement('description', $config->description);
             $mount->appendChild($description);
         }
-        
-        // Insert the mount node before the <fileserve> node
-        $parentNode->insertBefore($mount, $fileserveNode);
+
+        // Append the mount element to the parent node (where the placeholder was)
+        $parentNode->appendChild($mount);
     }
-    
-    // Define the target XML file path (adjust if necessary)
+
+    // Define the target XML file path; ensure permissions allow writing here.
     $xmlFilePath = '/etc/icecast2/icecast.xml';
-    
+
     // Save the updated XML file
     if ($dom->save($xmlFilePath)) {
         session()->flash('xml_update', 'icecast.xml updated successfully.');
-        
-        // Optionally, reload Icecast service if required:
+        // Optionally, reload the Icecast service
         // shell_exec('sudo systemctl reload icecast2');
     } else {
         session()->flash('xml_update', 'Failed to update icecast.xml.');
     }
 }
-
 
 }
