@@ -119,14 +119,14 @@ return [
                 'throttle' => 60,
             ],
 
-            'subscriber' => [
+            'subscribers' => [
                 'provider' => 'subscribers',
                 'table'    => 'subscriber_password_resets_tokens',
                 'expire'   => 60,
                 'throttle' => 60,
             ],
 
-            'listener' => [
+            'listeners' => [
                 'provider' => 'listeners',
                 'table'    => 'listeners_password_resets_tokens',
                 'expire'   => 60,
