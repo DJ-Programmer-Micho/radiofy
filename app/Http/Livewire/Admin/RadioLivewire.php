@@ -213,7 +213,7 @@ class RadioLivewire extends Component
 {
     // Path to the XML template in your resources folder
     $templatePath = resource_path('xml/icecast-template.xml');
-dd(resource_path('xml/icecast-template.xml'));
+
     // Load the template using DOMDocument
     $dom = new \DOMDocument('1.0', 'UTF-8');
     $dom->preserveWhiteSpace = false;
