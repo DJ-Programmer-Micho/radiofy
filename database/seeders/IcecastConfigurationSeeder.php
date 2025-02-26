@@ -46,7 +46,7 @@ class IcecastConfigurationSeeder extends Seeder
                 'description'     => 'A sample radio stream',
                 'bitrate'         => $plan->bitrate, // from the selected plan
                 'sample_rate'     => 44100,
-                'status'          => 'active',
+                'status'          => true,
             ]);
             $i++;
         }
