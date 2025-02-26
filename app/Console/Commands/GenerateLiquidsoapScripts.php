@@ -36,13 +36,13 @@ class GenerateLiquidsoapScripts extends Command
         }
 
         // Define encoder details (adjust these as needed)
-        $encoder_ip = 'http://192.168.0.113/';
+        $encoder_ip = '192.168.0.113';
         $encoder_port = '8000';
 
         foreach ($plans as $plan) {
             // Define dynamic values per plan
             // Here, we use a mount name based on bitrate and listener limit.
-            $mount = '/plan_' . $plan->bitrate . '_' . $plan->max_listeners;
+            $mount = 'plan_' . $plan->bitrate . '_' . $plan->max_listeners;
             $bitrate = $plan->bitrate;  // This is the target output bitrate
 
             $content = str_replace(
