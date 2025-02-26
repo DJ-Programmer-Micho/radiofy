@@ -37,6 +37,9 @@ class RadioLivewire extends Component
     public $adminPassword;
     public $fallbackMount;
     public $status;    
+
+    public $selectedPlanId;
+
     // DELETE
     public $brand_selected_id_delete;
     public $brand_name_selected_delete;
@@ -68,7 +71,6 @@ class RadioLivewire extends Component
             'location'       => 'nullable|string|max:255',
             'serverAdmin'    => 'required|email',
             'serverPassword' => 'required|string',
-            'maxListeners'   => 'required|integer|min:1',
             'burstSize'      => 'required|integer|min:1',
             'port'           => 'required|integer',
             'bindAddress'    => 'required|string',
@@ -77,6 +79,7 @@ class RadioLivewire extends Component
             'adminPassword'  => 'nullable|string',
             'fallbackMount'  => 'nullable|string',
             'status'         => 'required|in:0,1',
+            'selectedPlanId' => 'required|exists:plans,id',
         ];
     }
 
@@ -90,7 +93,6 @@ class RadioLivewire extends Component
             'location'         => $this->location,
             'server_admin'     => $this->serverAdmin,
             'server_password'  => $this->serverPassword,
-            'max_listeners'    => $this->maxListeners,
             'burst_size'       => $this->burstSize,
             'port'             => $this->port,
             'bind_address'     => $this->bindAddress,
@@ -99,6 +101,7 @@ class RadioLivewire extends Component
             'admin_password'   => $this->adminPassword,
             'fallback_mount'   => $this->fallbackMount,
             'status'           => $this->status,
+            'plan_id'          => $this->selectedPlanId,
         ]);
         
         session()->flash('message', 'Radio added successfully.');
@@ -113,7 +116,7 @@ class RadioLivewire extends Component
         $this->location       = $radio->location;
         $this->serverAdmin    = $radio->server_admin;
         $this->serverPassword = $radio->server_password;
-        $this->maxListeners   = $radio->max_listeners;
+        $this->selectedPlanId = $radio->plan_id;
         $this->burstSize      = $radio->burst_size;
         $this->port           = $radio->port;
         $this->bindAddress    = $radio->bind_address;
@@ -144,6 +147,7 @@ class RadioLivewire extends Component
                 'admin_password'   => $this->adminPassword,
                 'fallback_mount'   => $this->fallbackMount,
                 'status'           => $this->status,
+                'plan_id'         => $this->selectedPlanId,
             ]);
             
             session()->flash('message', 'Radio updated successfully.');
@@ -172,49 +176,42 @@ class RadioLivewire extends Component
         $this->adminPassword  = null;
         $this->fallbackMount  = null;
         $this->status         = 1;
+        $this->selectedPlanId = null;
     }
 
     // Render
     public function render()
     {
-        // Count active and non-active configurations
         $this->activeCount = IcecastConfiguration::where('status', 1)->count();
         $this->nonActiveCount = IcecastConfiguration::where('status', 0)->count();
     
-        // Start with the query builder
         $query = IcecastConfiguration::query();
     
-        // Apply status filter
         if ($this->statusFilter === 'active') {
             $query->where('status', 1);
         } elseif ($this->statusFilter === 'non-active') {
             $query->where('status', 0);
         }
     
-        // Apply search filter based on the related brandtranslation
         if (!empty($this->search)) {
-            $query->whereHas('brandtranslation', function ($q) {
-                $q->where('name', 'like', '%' . $this->search . '%');
-            });
+            $query->where('radio_name', 'like', '%' . $this->search . '%');
         }
     
-        // Execute the query with ordering and pagination
         $tableData = $query->orderBy('created_at', 'ASC')->paginate(10)->withQueryString();
     
         return view('admin.pages.radio.radio-table', [
             'tableData' => $tableData,
         ]);
-    }    
+    }
 
     //************************************** */
     //XML FILE TRIGGER */
     //************************************** */
     public function updateIcecastXml()
     {
-        // Path to the XML template
+        // Path to the XML template in your resources folder
         $templatePath = resource_path('xml/icecast-template.xml');
     
-        // Load the template using DOMDocument
         $dom = new \DOMDocument('1.0', 'UTF-8');
         $dom->preserveWhiteSpace = false;
         $dom->formatOutput = true;
@@ -223,52 +220,50 @@ class RadioLivewire extends Component
             return;
         }
     
-        // Locate the placeholder comment
         $xpath = new \DOMXPath($dom);
         $placeholderNodes = $xpath->query('//comment()[contains(., "MOUNTS_PLACEHOLDER")]');
         if ($placeholderNodes->length > 0) {
             $placeholder = $placeholderNodes->item(0);
             $parentNode = $placeholder->parentNode;
-            // Remove the placeholder comment
             $parentNode->removeChild($placeholder);
         } else {
-            // Fallback if not found
             $parentNode = $dom->documentElement;
         }
     
-        // Retrieve active radio configurations from the database
-        $configs = \App\Models\IcecastConfiguration::where('status', 1)->get();
-
-        // For each configuration, create a <mount> element with its children.
+        // Retrieve active radio configurations
+        $configs = IcecastConfiguration::where('status', 1)->with('plan')->get();
+    
         foreach ($configs as $config) {
             $mount = $dom->createElement('mount');
             $mount->setAttribute('type', 'normal');
     
-            // Generate mount-name from radio name (e.g., /radiolive)
+            // Generate mount-name (e.g., /radiolive)
             $mountNameText = '/' . strtolower(str_replace(' ', '_', $config->radio_name));
             $mountName = $dom->createElement('mount-name', htmlspecialchars($mountNameText));
             $mount->appendChild($mountName);
     
-            // Add username element (if needed)
             $username = $dom->createElement('username', 'source');
             $mount->appendChild($username);
     
-            // Add password element
             $password = $dom->createElement('password', $config->server_password);
             $mount->appendChild($password);
     
-            // Add max-listeners element
-            $maxListeners = $dom->createElement('max-listeners', $config->max_listeners);
+            // Use max_listeners from the plan relation
+            $maxListenersValue = $config->plan ? $config->plan->max_listeners : 0;
+            $maxListeners = $dom->createElement('max-listeners', $maxListenersValue);
             $mount->appendChild($maxListeners);
     
-            // Add burst-size element
             $burstSize = $dom->createElement('burst-size', $config->burst_size);
             $mount->appendChild($burstSize);
     
-            // Optionally add fallback-mount, genre, description if provided
             if ($config->fallback_mount) {
                 $fallback = $dom->createElement('fallback-mount', $config->fallback_mount);
                 $mount->appendChild($fallback);
+            }
+            if ($config->plan && $config->plan->bitrate) {
+                // Optionally add an element to indicate bitrate
+                $bitrate = $dom->createElement('bitrate', $config->plan->bitrate);
+                $mount->appendChild($bitrate);
             }
             if ($config->genre) {
                 $genre = $dom->createElement('genre', $config->genre);
@@ -279,23 +274,18 @@ class RadioLivewire extends Component
                 $mount->appendChild($description);
             }
     
-            // Append the mount element
             $parentNode->appendChild($mount);
         }
     
-        // Define the target XML file path
         $xmlFilePath = '/etc/icecast2/icecast.xml';
     
-        // Save the updated XML file
         if ($dom->save($xmlFilePath)) {
             session()->flash('xml_update', 'icecast.xml updated successfully.');
-            // Reload Icecast service
             $output = shell_exec('sudo systemctl reload icecast2 2>&1');
             session()->flash('xml_reload', 'Icecast reloaded: ' . $output);
         } else {
             session()->flash('xml_update', 'Failed to update icecast.xml.');
         }
     }
-    
 
 }

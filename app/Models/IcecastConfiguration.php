@@ -10,11 +10,11 @@ class IcecastConfiguration extends Model
     use HasFactory;
     protected $fillable = [
         'subscriber_id',
+        'plan_id',
         'radio_name',
         'location',
         'server_admin',
         'server_password',
-        'max_listeners',    // number of clients
         'burst_size',
         'port',
         'bind_address',
@@ -25,5 +25,11 @@ class IcecastConfiguration extends Model
         'status',
     ];
 
-    public function radio() { return $this->hasOne(Subscriber::class, 'subscriber_id'); }
+    public function subscriber() {
+        return $this->belongsTo(Subscriber::class, 'subscriber_id');
+    }
+
+    public function plan() {
+        return $this->belongsTo(Plan::class, 'plan_id');
+    }
 }

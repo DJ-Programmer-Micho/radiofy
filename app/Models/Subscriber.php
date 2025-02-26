@@ -18,12 +18,12 @@ class Subscriber extends Authenticatable implements JWTSubject
         'username',
         'email',
         'password',
+        'uid',
         'status',
         'email_verify',
         'phone_verify',
         'email_otp_number',
         'phone_otp_number',
-        'uid',
     ];
 
     protected $hidden = [

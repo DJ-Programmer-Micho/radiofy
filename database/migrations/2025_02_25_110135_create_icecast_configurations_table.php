@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('icecast_configurations', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('subscriber_id')->unique();
+            $table->unsignedBigInteger('plan_id')->unique();
             $table->string('radio_name');
             $table->string('location')->nullable();
             $table->string('server_admin')->nullable();
             $table->string('server_password');
-            $table->unsignedInteger('max_listeners')->default(100);
             $table->unsignedInteger('burst_size')->default(1024);
             $table->unsignedInteger('port')->default(8000);
             $table->string('bind_address')->default('0.0.0.0');
@@ -34,6 +34,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('subscriber_id')->references('id')->on('subscribers')->onDelete('cascade');
+            $table->foreign('plan_id')->references('id')->on('plans')->onDelete('cascade');
         });
     }
 

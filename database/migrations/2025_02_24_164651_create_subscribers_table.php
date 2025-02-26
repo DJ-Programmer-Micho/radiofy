@@ -14,11 +14,10 @@ return new class extends Migration
         Schema::create('subscribers', function (Blueprint $table) {
             $table->id();
             $table->string('username')->unique();
-            $table->string('radio_name')->nullable();
             $table->string('email')->unique();
             $table->string('password');
             $table->string('uid')->nullable();
-            $table->string('status')->default('active');
+            $table->boolean('status')->default(true);
             $table->boolean('email_verify')->default(false);
             $table->boolean('phone_verify')->default(false);
             $table->string('email_otp_number')->nullable();
