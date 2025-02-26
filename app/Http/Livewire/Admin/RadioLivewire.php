@@ -238,7 +238,7 @@ class RadioLivewire extends Component
     
         // Retrieve active radio configurations from the database
         $configs = \App\Models\IcecastConfiguration::where('status', 1)->get();
-    
+    dd($configs);
         // For each configuration, create a <mount> element with its children.
         foreach ($configs as $config) {
             $mount = $dom->createElement('mount');
