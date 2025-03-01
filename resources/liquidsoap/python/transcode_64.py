@@ -22,9 +22,21 @@ def start_ffmpeg_process(radio_id, config):
         "-f", "mp3",
         f"icecast://source:{config['password']}@{config['host']}:{config['port']}{config['mount']}"
     ]
-    print(f"Starting stream for radio {radio_id} with command: {' '.join(ffmpeg_command)}")
+    command_str = ' '.join(ffmpeg_command)
+    print(f"Starting stream for radio {radio_id} with command: {command_str}")
     process = subprocess.Popen(ffmpeg_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    
+    # Read a few lines from stderr for debugging
+    try:
+        for _ in range(10):
+            line = process.stderr.readline()
+            if not line:
+                break
+            print(f"FFmpeg error (radio {radio_id}): {line.decode('utf-8').strip()}")
+    except Exception as e:
+        print(f"Error reading FFmpeg stderr for radio {radio_id}: {e}")
     return process
+
 
 def restart_ffmpeg_process(radio_id, config):
     # If there is an existing process, terminate it gracefully.
