@@ -236,81 +236,103 @@ class RadioLivewire extends Component
     
     // Legacy XML update for Icecast (optional if dynamic Python updates are used)
     public function updateIcecastXml()
-    {
-        $templatePath = resource_path('xml/icecast-template.xml');
-    
-        $dom = new \DOMDocument('1.0', 'UTF-8');
-        $dom->preserveWhiteSpace = false;
-        $dom->formatOutput = true;
-        if (!$dom->load($templatePath)) {
-            session()->flash('xml_update', 'Failed to load XML template.');
-            return;
-        }
-    
-        $xpath = new \DOMXPath($dom);
-        $placeholderNodes = $xpath->query('//comment()[contains(., "MOUNTS_PLACEHOLDER")]');
-        if ($placeholderNodes->length > 0) {
-            $placeholder = $placeholderNodes->item(0);
-            $parentNode = $placeholder->parentNode;
-            $parentNode->removeChild($placeholder);
-        } else {
-            $parentNode = $dom->documentElement;
-        }
-    
-        // Retrieve active radio configurations.
-        $configs = IcecastConfiguration::where('status', 1)->with('plan')->get();
-    
-        foreach ($configs as $config) {
-            $mount = $dom->createElement('mount');
-            $mount->setAttribute('type', 'normal');
-    
-            $mountNameText = '/' . strtolower(str_replace(' ', '_', $config->radio_name));
-            $mountName = $dom->createElement('mount-name', htmlspecialchars($mountNameText));
-            $mount->appendChild($mountName);
-    
-            $username = $dom->createElement('username', 'source');
-            $mount->appendChild($username);
-    
-            $password = $dom->createElement('password', $config->server_password);
-            $mount->appendChild($password);
-    
-            $maxListenersValue = $config->plan ? $config->plan->max_listeners : 0;
-            $maxListeners = $dom->createElement('max-listeners', $maxListenersValue);
-            $mount->appendChild($maxListeners);
-    
-            $burstSize = $dom->createElement('burst-size', $config->burst_size);
-            $mount->appendChild($burstSize);
-    
-            if ($config->fallback_mount) {
-                $fallback = $dom->createElement('fallback-mount', $config->fallback_mount);
-                $mount->appendChild($fallback);
-            }
-            if ($config->plan && $config->plan->bitrate) {
-                $bitrate = $dom->createElement('bitrate', $config->plan->bitrate);
-                $mount->appendChild($bitrate);
-            }
-            if ($config->genre) {
-                $genre = $dom->createElement('genre', $config->genre);
-                $mount->appendChild($genre);
-            }
-            if ($config->description) {
-                $description = $dom->createElement('description', $config->description);
-                $mount->appendChild($description);
-            }
-    
-            $parentNode->appendChild($mount);
-        }
-    
-        $xmlFilePath = '/etc/icecast2/icecast.xml';
-    
-        if ($dom->save($xmlFilePath)) {
-            session()->flash('xml_update', 'icecast.xml updated successfully.');
-            $output = shell_exec('sudo systemctl reload icecast2 2>&1');
-            session()->flash('xml_reload', 'Icecast reloaded: ' . $output);
-        } else {
-            session()->flash('xml_update', 'Failed to update icecast.xml.');
-        }
+{
+    $templatePath = resource_path('xml/icecast-template.xml');
+
+    $dom = new \DOMDocument('1.0', 'UTF-8');
+    $dom->preserveWhiteSpace = false;
+    $dom->formatOutput = true;
+    if (!$dom->load($templatePath)) {
+        session()->flash('xml_update', 'Failed to load XML template.');
+        return;
     }
+
+    $xpath = new \DOMXPath($dom);
+    // Look for a placeholder comment to insert mounts.
+    $placeholderNodes = $xpath->query('//comment()[contains(., "MOUNTS_PLACEHOLDER")]');
+    if ($placeholderNodes->length > 0) {
+        $placeholder = $placeholderNodes->item(0);
+        $parentNode = $placeholder->parentNode;
+        $parentNode->removeChild($placeholder);
+    } else {
+        $parentNode = $dom->documentElement;
+    }
+
+    // --- Add the fixed ingestion mount ---
+    $ingestionMount = $dom->createElement('mount');
+    $ingestionMount->setAttribute('type', 'normal');
+
+    // Static ingestion mount details
+    $ingestionMountName = $dom->createElement('mount-name', '/source_radio_one1');
+    $ingestionMount->appendChild($ingestionMountName);
+
+    $ingestionUsername = $dom->createElement('username', 'source');
+    $ingestionMount->appendChild($ingestionUsername);
+
+    $ingestionPassword = $dom->createElement('password', 'hackme');
+    $ingestionMount->appendChild($ingestionPassword);
+
+    $ingestionMaxListeners = $dom->createElement('max-listeners', 10);
+    $ingestionMount->appendChild($ingestionMaxListeners);
+
+    $parentNode->appendChild($ingestionMount);
+
+    // --- Add dynamic listener mounts from active configurations ---
+    $configs = IcecastConfiguration::where('status', 1)->with('plan')->get();
+
+    foreach ($configs as $config) {
+        $mount = $dom->createElement('mount');
+        $mount->setAttribute('type', 'normal');
+
+        // Generate mount name from radio name, e.g. "/radio_one1"
+        $mountNameText = '/' . strtolower(str_replace(' ', '_', $config->radio_name));
+        $mountName = $dom->createElement('mount-name', htmlspecialchars($mountNameText));
+        $mount->appendChild($mountName);
+
+        $username = $dom->createElement('username', 'source');
+        $mount->appendChild($username);
+
+        $password = $dom->createElement('password', $config->server_password);
+        $mount->appendChild($password);
+
+        $maxListenersValue = $config->plan ? $config->plan->max_listeners : 0;
+        $maxListeners = $dom->createElement('max-listeners', $maxListenersValue);
+        $mount->appendChild($maxListeners);
+
+        $burstSize = $dom->createElement('burst-size', $config->burst_size);
+        $mount->appendChild($burstSize);
+
+        if ($config->fallback_mount) {
+            $fallback = $dom->createElement('fallback-mount', $config->fallback_mount);
+            $mount->appendChild($fallback);
+        }
+        if ($config->plan && $config->plan->bitrate) {
+            $bitrate = $dom->createElement('bitrate', $config->plan->bitrate);
+            $mount->appendChild($bitrate);
+        }
+        if ($config->genre) {
+            $genre = $dom->createElement('genre', $config->genre);
+            $mount->appendChild($genre);
+        }
+        if ($config->description) {
+            $description = $dom->createElement('description', $config->description);
+            $mount->appendChild($description);
+        }
+
+        $parentNode->appendChild($mount);
+    }
+
+    $xmlFilePath = '/etc/icecast2/icecast.xml';
+
+    if ($dom->save($xmlFilePath)) {
+        session()->flash('xml_update', 'icecast.xml updated successfully.');
+        $output = shell_exec('sudo systemctl reload icecast2 2>&1');
+        session()->flash('xml_reload', 'Icecast reloaded: ' . $output);
+    } else {
+        session()->flash('xml_update', 'Failed to update icecast.xml.');
+    }
+}
+
     
     // Restart all radios: update Icecast XML (if needed) and trigger Python updates.
     public function restartAllRadios()
