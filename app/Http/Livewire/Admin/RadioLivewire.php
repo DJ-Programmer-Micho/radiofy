@@ -202,7 +202,7 @@ class RadioLivewire extends Component
         $sourceMount = '/source_' . ltrim($mountName, '/');
         
         // Use the bitrate from the associated plan; default to 64 if not set.
-        $bitrate = ($radio->plan && $radio->bitrate) ? $radio->bitrate : 128;
+        $bitrate = $radio->bitrate ?? 128;
         
         // Build the configuration payload.
         // We hardcode the Icecast port (8000) here.
