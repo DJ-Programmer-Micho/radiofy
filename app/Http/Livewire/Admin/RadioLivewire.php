@@ -194,7 +194,7 @@ class RadioLivewire extends Component
     {
         // Generate mount name (for listeners) based on radio name.
         // e.g., "Radio One1" becomes "/radio_one1"
-        $mountName = '/' . strtolower(str_replace(' ', '_', $radio->radio_name));
+        $mountName = '_' . strtolower(str_replace(' ', '_', $radio->radio_name));
         // Construct ingestion mount URL using a fixed prefix.
         // This will always be: http://192.168.0.113:8000/source_<mountName>
         $sourceMount = '/source' . $mountName;
