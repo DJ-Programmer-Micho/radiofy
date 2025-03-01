@@ -192,7 +192,6 @@ class RadioLivewire extends Component
     // Send updated configuration to the Python transcoding service.
     protected function sendRadioConfigUpdate($radio)
     {
-        Log::info($radio);
         // Generate listener mount name based on radio name.
         // For example, "Radio One1" becomes "/radio_one1"
         $mountName = '/' . strtolower(str_replace(' ', '_', $radio->radio_name));
@@ -202,7 +201,7 @@ class RadioLivewire extends Component
         $sourceMount = '/source_' . ltrim($mountName, '/');
         
         // Use the bitrate from the associated plan; default to 64 if not set.
-        $bitrate = 32;
+        $bitrate = ($radio->plan && $radio->plan->bitrate) ? $radio->plan->bitrate : 64;
         
         // Build the configuration payload.
         // We hardcode the Icecast port (8000) here.
@@ -301,17 +300,17 @@ class RadioLivewire extends Component
             $maxListeners = $dom->createElement('max-listeners', $maxListenersValue);
             $mount->appendChild($maxListeners);
     
-            $burstSize = $dom->createElement('bitrate', $config->bitrate);
+            $burstSize = $dom->createElement('burst-size', $config->burst_size);
             $mount->appendChild($burstSize);
     
             if ($config->fallback_mount) {
                 $fallback = $dom->createElement('fallback-mount', $config->fallback_mount);
                 $mount->appendChild($fallback);
             }
-            // if ($config->plan && $config->plan->bitrate) {
-            //     $bitrate = $dom->createElement('bitrate', $config->plan->bitrate);
-            //     $mount->appendChild($bitrate);
-            // }
+            if ($config->plan && $config->plan->bitrate) {
+                $bitrate = $dom->createElement('bitrate', $config->plan->bitrate);
+                $mount->appendChild($bitrate);
+            }
             if ($config->genre) {
                 $genre = $dom->createElement('genre', $config->genre);
                 $mount->appendChild($genre);
