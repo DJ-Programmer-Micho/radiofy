@@ -93,3 +93,8 @@ if __name__ == "__main__":
         print("Shutting down streams...")
         for proc in radio_processes.values():
             proc.terminate()
+
+
+@app.route("/health", methods=["GET"])
+def health():
+    return {"status": "ok"}, 200
