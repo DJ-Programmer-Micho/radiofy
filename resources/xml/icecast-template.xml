@@ -6,9 +6,9 @@
     <clients>10000</clients>
     <sources>10000</sources>
     <queue-size>524288</queue-size>
-    <client-timeout>30</client-timeout>
-    <header-timeout>15</header-timeout>
-    <source-timeout>20</source-timeout>
+    <client-timeout>30000</client-timeout>
+    <header-timeout>15000</header-timeout>
+    <source-timeout>20000</source-timeout>
     <burst-on-connect>1</burst-on-connect>
     <burst-size>65535</burst-size>
   </limits>
