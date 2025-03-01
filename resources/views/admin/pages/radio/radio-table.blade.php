@@ -89,53 +89,60 @@
                                     </thead>
                                     <tbody>
                                         @forelse($tableData as $data)
-                                            <tr wire:key="radio-{{ $data->id }}">
-                                                <td class="align-middle">
-                                                    {{ $data->radio_name ?? 'Unknown' }}
-                                                </td>
-                                                <td class="align-middle text-center">
-                                                    <span class="badge {{ $data->status ? 'bg-success' : 'bg-danger' }} p-2" style="font-size: 0.7rem;">
-                                                        {{ $data->status ? __('Active') : __('Non-Active') }}
-                                                    </span>
-                                                </td>
-                                                <td class="align-middle text-center">
-                                                    <div class="dropdown">
-                                                        <button class="btn btn-soft-secondary btn-sm dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                            <i class="ri-more-fill"></i>
-                                                        </button>
-                                                        <ul class="dropdown-menu dropdown-menu-end">
-                                                            <li>
-                                                                <button class="dropdown-item" type="button" wire:click="updateStatus({{ $data->id }})">
-                                                                    @if ($data->status == 1)
-                                                                        <span class="text-danger"><i class="fa-solid fa-xmark me-2"></i>{{ __('Deactivate') }}</span>
-                                                                    @else
-                                                                        <span class="text-success"><i class="fa-solid fa-check me-2"></i>{{ __('Activate') }}</span>
-                                                                    @endif
-                                                                </button>
-                                                            </li>
-                                                            <li>
-                                                                <button type="button" class="dropdown-item edit-radio" data-bs-toggle="modal" data-bs-target="#updateRadioModal" wire:click="editRadio({{ $data->id }})">
-                                                                    <i class="fa-regular fa-pen-to-square me-2"></i>{{ __('Edit') }}
-                                                                </button>
-                                                            </li>
-                                                            <li class="dropdown-divider"></li>
-                                                            <li>
-                                                                <button type="button" class="dropdown-item" wire:click="removeRadio({{ $data->id }})">
-                                                                    <i class="fa-regular fa-trash-can me-2"></i>{{ __('Delete') }}
-                                                                </button>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="3" class="text-center py-4">
-                                                    <lord-icon src="https://cdn.lordicon.com/msoeawqm.json" trigger="loop" colors="primary:#405189,secondary:#0ab39c" style="width:72px;height:72px"></lord-icon>
-                                                    <h5 class="mt-4">{{ __('Sorry! No Result Found') }}</h5>
-                                                </td>
-                                            </tr>
-                                        @endforelse
+                                        <tr wire:key="radio-{{ $data->id }}">
+                                            <td class="align-middle">
+                                                {{ $data->radio_name ?? 'Unknown' }}
+                                            </td>
+                                            <td class="align-middle text-center">
+                                                <span class="badge {{ $data->status ? 'bg-success' : 'bg-danger' }} p-2" style="font-size: 0.7rem;">
+                                                    {{ $data->status ? __('Active') : __('Non-Active') }}
+                                                </span>
+                                            </td>
+                                            <td class="align-middle text-center">
+                                                <div class="dropdown">
+                                                    <button class="btn btn-soft-secondary btn-sm dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                        <i class="ri-more-fill"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end">
+                                                        <li>
+                                                            <button class="dropdown-item" type="button" wire:click="updateStatus({{ $data->id }})">
+                                                                @if ($data->status == 1)
+                                                                    <span class="text-danger"><i class="fa-solid fa-xmark me-2"></i>{{ __('Deactivate') }}</span>
+                                                                @else
+                                                                    <span class="text-success"><i class="fa-solid fa-check me-2"></i>{{ __('Activate') }}</span>
+                                                                @endif
+                                                            </button>
+                                                        </li>
+                                                        <li>
+                                                            <button type="button" class="dropdown-item edit-radio" data-bs-toggle="modal" data-bs-target="#updateRadioModal" wire:click="editRadio({{ $data->id }})">
+                                                                <i class="fa-regular fa-pen-to-square me-2"></i>{{ __('Edit') }}
+                                                            </button>
+                                                        </li>
+                                                        <!-- New button to update the specific radio via Python -->
+                                                        <li>
+                                                            <button type="button" class="dropdown-item" wire:click="updateRadioPython({{ $data->id }})">
+                                                                <i class="fa-solid fa-sync me-2"></i>{{ __('Update Radio Python') }}
+                                                            </button>
+                                                        </li>
+                                                        <li class="dropdown-divider"></li>
+                                                        <li>
+                                                            <button type="button" class="dropdown-item" wire:click="removeRadio({{ $data->id }})">
+                                                                <i class="fa-regular fa-trash-can me-2"></i>{{ __('Delete') }}
+                                                            </button>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="3" class="text-center py-4">
+                                                <lord-icon src="https://cdn.lordicon.com/msoeawqm.json" trigger="loop" colors="primary:#405189,secondary:#0ab39c" style="width:72px;height:72px"></lord-icon>
+                                                <h5 class="mt-4">{{ __('Sorry! No Result Found') }}</h5>
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                    
                                     </tbody>
                                 </table>
                             </div>

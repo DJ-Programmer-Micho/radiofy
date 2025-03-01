@@ -3,8 +3,8 @@
   <location>Earth</location>
   <admin>icemaster@localhost</admin>
   <limits>
-    <clients>1000</clients>
-    <sources>2</sources>
+    <clients>10000</clients>
+    <sources>10000</sources>
     <queue-size>524288</queue-size>
     <client-timeout>30</client-timeout>
     <header-timeout>15</header-timeout>

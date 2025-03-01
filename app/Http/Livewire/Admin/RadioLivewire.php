@@ -188,7 +188,17 @@ class RadioLivewire extends Component
             'tableData' => $tableData,
         ]);
     }
-    
+    public function updateRadioPython($id)
+    {
+        $radio = IcecastConfiguration::find($id);
+        if ($radio) {
+            $this->sendRadioConfigUpdate($radio);
+            session()->flash('message', "Radio {$radio->radio_name} updated in Python service.");
+        } else {
+            session()->flash('message', "Radio not found.");
+        }
+    }
+
     // Send updated configuration to the Python transcoding service.
     protected function sendRadioConfigUpdate($radio)
     {
