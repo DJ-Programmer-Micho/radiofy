@@ -300,7 +300,7 @@ class RadioLivewire extends Component
             $maxListeners = $dom->createElement('max-listeners', $maxListenersValue);
             $mount->appendChild($maxListeners);
     
-            $burstSize = $dom->createElement('burst-size', $config->burst_size);
+            $burstSize = $dom->createElement('bitrate', $config->burst_size);
             $mount->appendChild($burstSize);
     
             if ($config->fallback_mount) {
