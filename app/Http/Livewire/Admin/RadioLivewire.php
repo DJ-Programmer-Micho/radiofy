@@ -3,12 +3,14 @@
 namespace App\Http\Livewire\Admin;
 
 use App\Models\Brand;
+use GuzzleHttp\Client;
 use Livewire\Component;
 use Illuminate\Support\Str;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
 use Illuminate\Validation\Rule;
 use App\Models\BrandTranslation;
+use Illuminate\Support\Facades\Log;
 use App\Models\IcecastConfiguration;
 use Illuminate\Support\Facades\Storage;
 
@@ -149,7 +151,8 @@ class RadioLivewire extends Component
                 'status'           => $this->status,
                 'plan_id'         => $this->selectedPlanId,
             ]);
-            
+            $this->sendRadioConfigUpdate($radio);
+
             session()->flash('message', 'Radio updated successfully.');
             $this->resetInputFields();
         }
@@ -204,6 +207,58 @@ class RadioLivewire extends Component
         ]);
     }
 
+    //************************************** */
+    //XML FILE TRIGGER */
+    //************************************** */
+    protected function sendRadioConfigUpdate($radio)
+    {
+        // Generate mount names.
+        $mountName = '/' . strtolower(str_replace(' ', '_', $radio->radio_name));
+        // Assume the source stream uses a "source_" prefix.
+        $sourceMount = '/source' . $mountName;
+        
+        // Use the bitrate from the associated plan; default to 320 if not set.
+        $bitrate = ($radio->plan && $radio->plan->bitrate) ? $radio->plan->bitrate : 64;
+        
+        // Construct the configuration payload.
+        $config = [
+            'source_url' => "http://192.168.0.113:{$radio->port}{$sourceMount}",
+            'mount'      => $mountName,
+            'bitrate'    => $bitrate,
+            'password'   => $radio->server_password,
+            'host'       => '192.168.0.113',
+            'port'       => $radio->port,
+        ];
+        // $config = [
+        //     'source_url' => "http://{$radio->bind_address}:{$radio->port}{$sourceMount}",
+        //     'mount'      => $mountName,
+        //     'bitrate'    => $bitrate,
+        //     'password'   => $radio->server_password,
+        //     'host'       => $radio->bind_address,
+        //     'port'       => $radio->port,
+        // ];
+        
+        // Define the Python service URL (update with your actual host/port)
+        $pythonServiceUrl = 'http://192.168.0.113:5000/update_radio_config';
+        
+        try {
+            $client = new Client();
+            $response = $client->post($pythonServiceUrl, [
+                'json'    => [
+                    'radio_id' => $radio->id,
+                    'config'   => $config,
+                ],
+                'timeout' => 5,
+            ]);
+            
+            if ($response->getStatusCode() !== 200) {
+                Log::error("Python service update failed for radio ID {$radio->id}: HTTP " . $response->getStatusCode());
+            }
+        } catch (\Exception $e) {
+            Log::error("Failed to update Python service for radio ID {$radio->id}: " . $e->getMessage());
+        }
+    }
+    
     //************************************** */
     //XML FILE TRIGGER */
     //************************************** */
