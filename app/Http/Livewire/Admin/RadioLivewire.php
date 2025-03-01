@@ -192,6 +192,7 @@ class RadioLivewire extends Component
     // Send updated configuration to the Python transcoding service.
     protected function sendRadioConfigUpdate($radio)
     {
+        Log::info($radio);
         // Generate listener mount name based on radio name.
         // For example, "Radio One1" becomes "/radio_one1"
         $mountName = '/' . strtolower(str_replace(' ', '_', $radio->radio_name));
