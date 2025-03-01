@@ -216,7 +216,7 @@ class RadioLivewire extends Component
         
         // Define the Python service URL.
         $pythonServiceUrl = 'http://192.168.0.113:5000/update_radio_config';
-        
+        Log::info($config);
         try {
             $client = new Client();
             $response = $client->post($pythonServiceUrl, [
