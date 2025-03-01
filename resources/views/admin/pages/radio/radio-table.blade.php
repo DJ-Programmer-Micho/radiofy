@@ -19,10 +19,13 @@
         <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addRadioModal">
             <i class="fa-regular fa-plus me-2"></i>{{ __('Add Radio') }}
         </button>
+        <button type="button" class="btn btn-info" wire:click="updateIcecastXml">
+            <i class="fa-solid fa-sync"></i> {{ __('Update Icecast XML') }}
+        </button>
+        <button type="button" class="btn btn-info" wire:click="restartAllRadios">
+            <i class="fa-solid fa-sync"></i> {{ __('Update Radio Python XML') }}
+        </button>
         <div class="container my-3">
-            <button type="button" class="btn btn-info" wire:click="updateIcecastXml">
-                <i class="fa-solid fa-sync"></i> {{ __('Update Icecast XML') }}
-            </button>
             @if (session()->has('xml_update'))
                 <div class="alert alert-success mt-2">
                     {{ session('xml_update') }}
