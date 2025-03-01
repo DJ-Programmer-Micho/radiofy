@@ -377,7 +377,7 @@
                 <div class="modal-body @if(app()->getLocale() != 'en') ar-shift @endif">
                     <p>{{ __('Are you sure you want to delete this Radio?') }}</p>
                     <p>{{ __('Please enter the in below to confirm:')}}</p>
-                    <p>{{$showTextTemp}}</p>
+                    {{-- <p>{{$showTextTemp}}</p> --}}
                     <input type="text" wire:model="RadioNameToDelete" class="form-control">
                 </div>
                 <div class="modal-footer">
