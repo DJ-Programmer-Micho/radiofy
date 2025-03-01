@@ -201,7 +201,7 @@ class RadioLivewire extends Component
         $sourceMount = '/source_' . ltrim($mountName, '/');
         
         // Use the bitrate from the associated plan; default to 64 if not set.
-        $bitrate = ($radio->plan && $radio->plan->bitrate) ? $radio->plan->bitrate : 64;
+        $bitrate = ($radio->plan && $radio->bitrate) ? $radio->bitrate : 128;
         
         // Build the configuration payload.
         // We hardcode the Icecast port (8000) here.
@@ -300,17 +300,17 @@ class RadioLivewire extends Component
             $maxListeners = $dom->createElement('max-listeners', $maxListenersValue);
             $mount->appendChild($maxListeners);
     
-            $burstSize = $dom->createElement('bitrate', $config->burst_size);
+            $burstSize = $dom->createElement('bitrate', $config->bitrate);
             $mount->appendChild($burstSize);
     
             if ($config->fallback_mount) {
                 $fallback = $dom->createElement('fallback-mount', $config->fallback_mount);
                 $mount->appendChild($fallback);
             }
-            if ($config->plan && $config->plan->bitrate) {
-                $bitrate = $dom->createElement('bitrate', $config->plan->bitrate);
-                $mount->appendChild($bitrate);
-            }
+            // if ($config->plan && $config->plan->bitrate) {
+            //     $bitrate = $dom->createElement('bitrate', $config->plan->bitrate);
+            //     $mount->appendChild($bitrate);
+            // }
             if ($config->genre) {
                 $genre = $dom->createElement('genre', $config->genre);
                 $mount->appendChild($genre);
