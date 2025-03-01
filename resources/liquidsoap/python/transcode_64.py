@@ -63,7 +63,7 @@ def update_radio_config():
 
 def run_flask():
     # Run Flask on a specific port; adjust as needed.
-    app.run(port=5000, debug=False, use_reloader=False)
+    app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
 
 # Run the Flask server in a separate thread alongside your transcoding processes.
 if __name__ == "__main__":
