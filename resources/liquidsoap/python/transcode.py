@@ -17,8 +17,10 @@ def start_ffmpeg_process(radio_id, config):
         "ffmpeg",
         "-reconnect", "1",
         "-reconnect_streamed", "1",
-        "-reconnect_delay_max", "2",
-        "-bufsize", "64k",
+        "-reconnect_delay_max", "5",  # Increased from 2 to 5
+        "-reconnect_attempts", "10",  # Add this parameter
+        "-timeout", "60000000",       # Add a long timeout
+        "-bufsize", "256k",           # Increase from 64k to 256k
         "-i", config['source_url'],
         "-c:a", "libmp3lame",
         "-b:a", f"{config['bitrate']}k",
@@ -28,17 +30,24 @@ def start_ffmpeg_process(radio_id, config):
     ]
     command_str = ' '.join(ffmpeg_command)
     print(f"Starting stream for radio {radio_id} with command: {command_str}")
+    log_file = open(f"radio_{radio_id}_log.txt", "a")
     process = subprocess.Popen(ffmpeg_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
     # Read a few lines from stderr for debugging
-    try:
-        for _ in range(10):
+    def log_stderr():
+        while True:
             line = process.stderr.readline()
-            if not line:
+            if not line and process.poll() is not None:
                 break
-            print(f"FFmpeg error (radio {radio_id}): {line.decode('utf-8').strip()}")
-    except Exception as e:
-        print(f"Error reading FFmpeg stderr for radio {radio_id}: {e}")
+            if line:
+                log_entry = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {line.decode('utf-8').strip()}"
+                print(log_entry)
+                log_file.write(log_entry + "\n")
+                log_file.flush()
+    
+    stderr_thread = threading.Thread(target=log_stderr, daemon=True)
+    stderr_thread.start()
+    
     return process
 
 
@@ -100,12 +109,27 @@ def monitor_processes():
 
     # Main loop for monitoring FFmpeg processes.
     try:
+        consecutive_failures = {}  # Track failures per radio
         while True:
             for radio_id, proc in list(radio_processes.items()):
                 if proc.poll() is not None:
-                    print(f"Stream for radio {radio_id} terminated unexpectedly. Restarting...")
+                    if radio_id not in consecutive_failures:
+                        consecutive_failures[radio_id] = 0
+                    consecutive_failures[radio_id] += 1
+                    
+                    print(f"Stream for radio {radio_id} terminated unexpectedly. Attempt {consecutive_failures[radio_id]}. Restarting...")
+                    
+                    # Add exponential backoff for repeated failures
+                    if consecutive_failures[radio_id] > 1:
+                        backoff_time = min(30, 2 ** consecutive_failures[radio_id])
+                        print(f"Waiting {backoff_time} seconds before restarting radio {radio_id}...")
+                        time.sleep(backoff_time)
+                    
                     radio_processes[radio_id] = start_ffmpeg_process(radio_id, radio_config[radio_id])
-            time.sleep(5)
+                else:
+                    # Reset consecutive failures counter if process is running
+                    consecutive_failures[radio_id] = 0
+            time.sleep(3)
     except KeyboardInterrupt:
         print("Shutting down streams...")
         for proc in radio_processes.values():

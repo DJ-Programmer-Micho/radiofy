@@ -234,14 +234,29 @@ class RadioLivewire extends Component
                     'radio_id' => $radio->id,
                     'config'   => $config,
                 ],
-                'timeout' => 5,
+                'timeout' => 10,  // Increased from 5 to 10 seconds
+                'connect_timeout' => 5,
+                'retry_on_timeout' => true,
+                'verify' => false, // If you're using self-signed certificates
             ]);
             
-            if ($response->getStatusCode() !== 200) {
-                Log::error("Python service update failed for radio ID {$radio->id}: HTTP " . $response->getStatusCode());
-            }
+            // ... existing code ...
         } catch (\Exception $e) {
-            Log::error("Failed to update Python service for radio ID {$radio->id}: " . $e->getMessage());
+            // Try one more time after a brief delay
+            Log::warning("First attempt to update Python service failed for radio ID {$radio->id}: " . $e->getMessage());
+            try {
+                sleep(2);
+                $client = new Client();
+                $response = $client->post($pythonServiceUrl, [
+                    'json'    => [
+                        'radio_id' => $radio->id,
+                        'config'   => $config,
+                    ],
+                    'timeout' => 10,
+                ]);
+            } catch (\Exception $e2) {
+                Log::error("Second attempt failed to update Python service for radio ID {$radio->id}: " . $e2->getMessage());
+            }
         }
     }
     
