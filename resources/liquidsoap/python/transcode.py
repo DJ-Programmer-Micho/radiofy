@@ -29,6 +29,7 @@ def start_ffmpeg_process(radio_id, config):
         "-reconnect_streamed", "1",
         "-reconnect_delay_max", "5",
         "-bufsize", "256k",
+        "-timeout", "60000000",
         "-i", config['source_url'],
         "-f", "lavfi", "-i", "anullsrc=r=44100:cl=mono",
         "-filter_complex", "[0:a][1:a]amix=inputs=2:duration=longest:dropout_transition=3",
