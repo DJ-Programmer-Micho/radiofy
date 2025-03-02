@@ -188,6 +188,7 @@ class RadioLivewire extends Component
             'tableData' => $tableData,
         ]);
     }
+    
     public function updateRadioPython($id)
     {
         $radio = IcecastConfiguration::find($id);
@@ -234,7 +235,7 @@ class RadioLivewire extends Component
                     'radio_id' => $radio->id,
                     'config'   => $config,
                 ],
-                'timeout' => 5,
+                'timeout' => 10,
             ]);
             
             if ($response->getStatusCode() !== 200) {
@@ -294,7 +295,8 @@ class RadioLivewire extends Component
             $listenerMount->appendChild($listenerMountName);
             $listenerUsername = $dom->createElement('username', 'source');
             $listenerMount->appendChild($listenerUsername);
-            $listenerPassword = $dom->createElement('password', $config->server_password);
+            // Use fixed password "password" for the listener mount.
+            $listenerPassword = $dom->createElement('password', 'password');
             $listenerMount->appendChild($listenerPassword);
             $maxListenersValue = $config->plan ? $config->plan->max_listeners : 0;
             $maxListeners = $dom->createElement('max-listeners', $maxListenersValue);
