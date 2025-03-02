@@ -18,6 +18,7 @@ def start_ffmpeg_process(radio_id, config):
         "-reconnect", "1",
         "-reconnect_streamed", "1",
         "-reconnect_delay_max", "2",
+        "-bufsize", "64k",
         "-i", config['source_url'],
         "-c:a", "libmp3lame",
         "-b:a", f"{config['bitrate']}k",

@@ -5,11 +5,11 @@
   <limits>
     <clients>10000</clients>
     <sources>10000</sources>
-    <queue-size>524288</queue-size>
-    <client-timeout>30000</client-timeout>
-    <header-timeout>15000</header-timeout>
-    <source-timeout>20000</source-timeout>
-    <burst-on-connect>1</burst-on-connect>
+    <queue-size>102400</queue-size>
+    <client-timeout>600000</client-timeout>
+    <header-timeout>600000</header-timeout>
+    <source-timeout>600000</source-timeout>
+    <burst-on-connect>1000</burst-on-connect>
     <burst-size>65535</burst-size>
   </limits>
   <authentication>
