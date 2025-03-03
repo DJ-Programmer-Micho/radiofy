@@ -126,14 +126,26 @@ def update_radio_config():
 def health():
     health_info = {"status": "ok", "radios": {}}
     for radio_id, info in radio_processes.items():
-        running = info['process'].poll() is None
-        uptime = time.time() - info['start_time'] if running else 0
-        health_info["radios"][radio_id] = {
-            "running": running,
-            "uptime_seconds": int(uptime),
-            "restart_count": info['restart_count']
-        }
+        try:
+            process = info.get("process")
+            if process is None:
+                raise ValueError("Missing process info")
+            running = process.poll() is None
+            start_time = info.get("start_time")
+            if start_time is None:
+                raise ValueError("Missing start_time")
+            uptime = time.time() - start_time if running else 0
+            restart_count = info.get("restart_count", 0)
+            health_info["radios"][radio_id] = {
+                "running": running,
+                "uptime_seconds": int(uptime),
+                "restart_count": restart_count
+            }
+        except Exception as e:
+            # Capture individual radio errors instead of crashing the whole endpoint.
+            health_info["radios"][radio_id] = {"error": str(e)}
     return jsonify(health_info), 200
+
 
 def flask_thread_func():
     app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
