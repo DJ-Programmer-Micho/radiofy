@@ -108,19 +108,23 @@ def update_radio(radio_id, new_config):
 def update_radio_config():
     try:
         data = request.json
-        radio_id = int(data.get("radio_id"))
-        if not radio_id:
-            return jsonify({"error": "Missing radio_id"}), 400
-
+        print("Received data:", data)
+        if not data:
+            raise ValueError("No JSON payload provided.")
+        radio_id_raw = data.get("radio_id")
+        if radio_id_raw is None:
+            raise ValueError("Missing radio_id")
+        radio_id = int(radio_id_raw)
         new_config = data.get("config")
         if not new_config:
-            return jsonify({"error": "Missing config data"}), 400
+            raise ValueError("Missing config data")
 
         update_radio(radio_id, new_config)
         return jsonify({"status": "success"}), 200
     except Exception as e:
         print(f"Exception in update_radio_config: {e}")
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/health", methods=["GET"])
 def health():
