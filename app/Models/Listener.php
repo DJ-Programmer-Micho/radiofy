@@ -48,4 +48,10 @@ class Listener extends Authenticatable implements JWTSubject
     }
 
     public function listener_profile() { return $this->hasOne(ListenerProfile::class, 'listener_id'); }
+
+    public function radioConfigurations()
+    {
+        return $this->belongsToMany(RadioConfiguration::class, 'listener_radio_configuration', 'listener_id', 'radio_configuration_id')
+                    ->withTimestamps();
+    }
 }

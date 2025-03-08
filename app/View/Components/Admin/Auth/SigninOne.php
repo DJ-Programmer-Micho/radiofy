@@ -21,6 +21,6 @@ class SigninOne extends Component
      */
     public function render(): View|Closure|string
     {
-        return view('super-admins.auth.signin-one');
+        // return view('super-admins.auth.signin-one');
     }
 }

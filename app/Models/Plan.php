@@ -8,5 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class Plan extends Model
 {
     use HasFactory;
-    protected $fillable = ['bitrate', 'max_listeners', 'sell_price'];
+    protected $fillable = ['bitrate', 'max_listeners', 'sell_price', 'priority', 'status'];
 }

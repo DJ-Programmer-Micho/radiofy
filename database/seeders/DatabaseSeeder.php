@@ -21,8 +21,10 @@ class DatabaseSeeder extends Seeder
         $this->call([
             PlanSeeder::class,
             SubscriberSeeder::class,
+            LanguageSeeder::class,
+            GenreSeeder::class,
             SubscriberProfileSeeder::class,
-            IcecastConfigurationSeeder::class,
+            RadioConfigurationSeeder::class,
         ]);
     }
 }

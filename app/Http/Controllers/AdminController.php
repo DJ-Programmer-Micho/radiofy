@@ -13,4 +13,13 @@ class AdminController extends Controller
     public function radioAdjustments(){
         return view('admin.pages.radio.index');
     }
+    public function radioGenres(){
+        return view('admin.pages.genre.index');
+    }
+    public function radioLanguages(){
+        return view('admin.pages.language.index');
+    }
+    public function radioPlan(){
+        return view('admin.pages.plan.index');
+    }
 }

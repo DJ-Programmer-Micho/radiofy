@@ -16,6 +16,8 @@ return new class extends Migration
             $table->integer('bitrate');         
             $table->integer('max_listeners');   
             $table->decimal('sell_price', 8, 2);
+            $table->integer('priority');
+            $table->unsignedInteger('status')->default(1);
             $table->timestamps();
         });
     }

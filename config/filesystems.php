@@ -43,6 +43,14 @@ return [
             'visibility' => 'public',
             'throw' => false,
         ],
+        
+        'genre' => [
+            'driver' => 'local',
+            'root'   => storage_path('app/public/genre'),
+            'url'    => env('APP_URL').'/storage/genre',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
 
         's3' => [
             'driver' => 's3',

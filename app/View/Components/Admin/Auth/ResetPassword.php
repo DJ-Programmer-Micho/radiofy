@@ -21,6 +21,6 @@ class ResetPassword extends Component
      */
     public function render(): View|Closure|string
     {
-        return view('super-admins.auth.reset-password-one');
+        // return view('super-admins.auth.reset-password-one');
     }
 }

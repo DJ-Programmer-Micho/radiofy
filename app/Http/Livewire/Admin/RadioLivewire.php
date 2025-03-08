@@ -2,7 +2,7 @@
 
 namespace App\Http\Livewire\Admin;
 
-use App\Models\IcecastConfiguration;
+use App\Models\RadioConfiguration;
 use GuzzleHttp\Client;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -19,19 +19,14 @@ class RadioLivewire extends Component
     public $radioId;
     public $radioName;
     public $location;
-    public $serverAdmin;
-    public $serverPassword;
-    public $maxListeners;    // number of clients
-    public $burstSize;
-    public $port;
-    public $bindAddress;
+    public $source;
     public $sourcePassword;
-    public $relayPassword;
-    public $adminPassword;
+    public $genre;
     public $fallbackMount;
-    public $status;
     public $selectedPlanId;
-    
+    public $status;
+    public $plans = [];
+
     // Render / search parameters
     public $search = '';
     public $statusFilter = 'all';
@@ -43,23 +38,17 @@ class RadioLivewire extends Component
         $this->status = 1;
         $this->statusFilter = request()->query('statusFilter', 'all');
         $this->page = request()->query('page', 1);
+        $this->plans = \App\Models\Plan::all();
     }
-    
+
     protected function rules()
     {
         return [
             'radioName'      => 'required|string|max:255',
             'location'       => 'nullable|string|max:255',
-            'serverAdmin'    => 'required|email',
-            'serverPassword' => 'required|string',
-            'burstSize'      => 'required|integer|min:1',
-            'port'           => 'required|integer',
-            'bindAddress'    => 'required|string',
-            'sourcePassword' => 'required|string',
-            'relayPassword'  => 'nullable|string',
-            'adminPassword'  => 'nullable|string',
-            'fallbackMount'  => 'nullable|string',
-            'status'         => 'required|in:0,1',
+            'source'         => 'nullable|string|max:255',
+            'source_Password'=> 'nullable|string|max:255',
+            'genre'          => 'required|string',
             'selectedPlanId' => 'required|exists:plans,id',
         ];
     }
@@ -68,20 +57,13 @@ class RadioLivewire extends Component
     {
         $this->validate();
         
-        $radio = IcecastConfiguration::create([
+        $radio = RadioConfiguration::create([
             'subscriber_id'    => 1,
             'radio_name'       => $this->radioName,
             'location'         => $this->location,
-            'server_admin'     => $this->serverAdmin,
-            'server_password'  => $this->serverPassword,
-            'burst_size'       => $this->burstSize,
-            'port'             => $this->port,
-            'bind_address'     => $this->bindAddress,
-            'source_password'  => $this->sourcePassword,
-            'relay_password'   => $this->relayPassword,
-            'admin_password'   => $this->adminPassword,
-            'fallback_mount'   => $this->fallbackMount,
-            'status'           => $this->status,
+            'source'           => $this->source."@mradiofy",
+            'source_Password'  => $this->sourcePassword,
+            'genre'            => $this->genre,
             'plan_id'          => $this->selectedPlanId,
         ]);
         
@@ -94,21 +76,14 @@ class RadioLivewire extends Component
     
     public function editRadio(int $id)
     {
-        $radio = IcecastConfiguration::findOrFail($id);
+        $radio = RadioConfiguration::findOrFail($id);
         $this->radioId        = $radio->id;
         $this->radioName      = $radio->radio_name;
         $this->location       = $radio->location;
-        $this->serverAdmin    = $radio->server_admin;
-        $this->serverPassword = $radio->server_password;
-        $this->selectedPlanId = $radio->plan_id;
-        $this->burstSize      = $radio->burst_size;
-        $this->port           = $radio->port;
-        $this->bindAddress    = $radio->bind_address;
+        $this->source         = $radio->source;
         $this->sourcePassword = $radio->source_password;
-        $this->relayPassword  = $radio->relay_password;
-        $this->adminPassword  = $radio->admin_password;
-        $this->fallbackMount  = $radio->fallback_mount;
-        $this->status         = $radio->status;
+        $this->genre          = $radio->genre;
+        $this->selectedPlanId = $radio->plan_id;
     }
     
     public function updateRadio()
@@ -116,21 +91,13 @@ class RadioLivewire extends Component
         $this->validate();
         
         if ($this->radioId) {
-            $radio = IcecastConfiguration::findOrFail($this->radioId);
+            $radio = RadioConfiguration::findOrFail($this->radioId);
             $radio->update([
                 'radio_name'       => $this->radioName,
                 'location'         => $this->location,
-                'server_admin'     => $this->serverAdmin,
-                'server_password'  => $this->serverPassword,
-                'max_listeners'    => $this->maxListeners,
-                'burst_size'       => $this->burstSize,
-                'port'             => $this->port,
-                'bind_address'     => $this->bindAddress,
-                'source_password'  => $this->sourcePassword,
-                'relay_password'   => $this->relayPassword,
-                'admin_password'   => $this->adminPassword,
-                'fallback_mount'   => $this->fallbackMount,
-                'status'           => $this->status,
+                'genre'            => $this->genre,
+                'source'           => $this->source,
+                'source_Password'  => $this->sourcePassword,
                 'plan_id'          => $this->selectedPlanId,
             ]);
             // Update Python transcoding service with new configuration.
@@ -151,26 +118,18 @@ class RadioLivewire extends Component
         $this->radioId        = null;
         $this->radioName      = null;
         $this->location       = null;
-        $this->serverAdmin    = null;
-        $this->serverPassword = null;
-        $this->maxListeners   = null;
-        $this->burstSize      = null;
-        $this->port           = null;
-        $this->bindAddress    = null;
+        $this->source         = null;
         $this->sourcePassword = null;
-        $this->relayPassword  = null;
-        $this->adminPassword  = null;
-        $this->fallbackMount  = null;
-        $this->status         = 1;
+        $this->genre          = null;
         $this->selectedPlanId = null;
     }
     
     public function render()
     {
-        $this->activeCount = IcecastConfiguration::where('status', 1)->count();
-        $this->nonActiveCount = IcecastConfiguration::where('status', 0)->count();
+        $this->activeCount = RadioConfiguration::where('status', 1)->count();
+        $this->nonActiveCount = RadioConfiguration::where('status', 0)->count();
     
-        $query = IcecastConfiguration::query();
+        $query = RadioConfiguration::query();
     
         if ($this->statusFilter === 'active') {
             $query->where('status', 1);
@@ -191,7 +150,7 @@ class RadioLivewire extends Component
     
     public function updateRadioPython($id)
     {
-        $radio = IcecastConfiguration::find($id);
+        $radio = RadioConfiguration::find($id);
         if ($radio) {
             $this->sendRadioConfigUpdate($radio);
             session()->flash('message', "Radio {$radio->radio_name} updated in Python service.");
@@ -220,14 +179,14 @@ class RadioLivewire extends Component
             'source_url' => "http://192.168.0.113:8000{$sourceMount}",  // e.g., http://192.168.0.113:8000/source_radio_one1
             'mount'      => $mountName,  // e.g., /radio_one1
             'bitrate'    => $bitrate,
-            'password'   => $radio->server_password,
+            'password'   => $radio->source_password,
             'host'       => '192.168.0.113',
             'port'       => 8000,
         ];
         
         // Define the Python service URL.
         $pythonServiceUrl = 'http://192.168.0.113:5000/update_radio_config';
-        Log::info('Sending config: ', $config);
+
         try {
             $client = new Client();
             $response = $client->post($pythonServiceUrl, [
@@ -271,7 +230,7 @@ class RadioLivewire extends Component
         }
     
         // Loop through active radio configurations and add both ingestion and listener mounts.
-        $configs = IcecastConfiguration::where('status', 1)->with('plan')->get();
+        $configs = RadioConfiguration::where('status', 1)->with('plan')->get();
     
         foreach ($configs as $config) {
             $radioNameSlug = strtolower(str_replace(' ', '_', $config->radio_name));
@@ -280,11 +239,11 @@ class RadioLivewire extends Component
             $ingestionMount->setAttribute('type', 'normal');
             $ingestionMountName = $dom->createElement('mount-name', '/source_' . $radioNameSlug);
             $ingestionMount->appendChild($ingestionMountName);
-            $ingestionUsername = $dom->createElement('username', 'source');
+            $ingestionUsername = $dom->createElement('username', $config->source);
             $ingestionMount->appendChild($ingestionUsername);
-            $ingestionPassword = $dom->createElement('password', $config->server_password);
+            $ingestionPassword = $dom->createElement('password', $config->source_Password);
             $ingestionMount->appendChild($ingestionPassword);
-            $ingestionMaxListeners = $dom->createElement('max-listeners', 10);
+            $ingestionMaxListeners = $dom->createElement('max-listeners', 2);
             $ingestionMount->appendChild($ingestionMaxListeners);
             $parentNode->appendChild($ingestionMount);
     
@@ -293,16 +252,16 @@ class RadioLivewire extends Component
             $listenerMount->setAttribute('type', 'normal');
             $listenerMountName = $dom->createElement('mount-name', '/' . $radioNameSlug);
             $listenerMount->appendChild($listenerMountName);
-            $listenerUsername = $dom->createElement('username', 'source');
+            $listenerUsername = $dom->createElement('username', 'source_lis');
             $listenerMount->appendChild($listenerUsername);
             // Use fixed password "password" for the listener mount.
-            $listenerPassword = $dom->createElement('password', 'password');
+            $listenerPassword = $dom->createElement('password', 'password_lis');
             $listenerMount->appendChild($listenerPassword);
-            $maxListenersValue = $config->plan ? $config->plan->max_listeners : 0;
+            $maxListenersValue = $config->plan ? $config->plan->max_listeners : 5;
             $maxListeners = $dom->createElement('max-listeners', $maxListenersValue);
             $listenerMount->appendChild($maxListeners);
-            $burstSize = $dom->createElement('burst-size', $config->burst_size);
-            $listenerMount->appendChild($burstSize);
+            // $burstSize = $dom->createElement('burst-size', $config->burst_size);
+            // $listenerMount->appendChild($burstSize);
             if ($config->fallback_mount) {
                 $fallback = $dom->createElement('fallback-mount', $config->fallback_mount);
                 $listenerMount->appendChild($fallback);
@@ -338,7 +297,7 @@ class RadioLivewire extends Component
     {
         $this->updateIcecastXml();
     
-        $radios = IcecastConfiguration::where('status', 1)->with('plan')->get();
+        $radios = RadioConfiguration::where('status', 1)->with('plan')->get();
         foreach ($radios as $radio) {
             $this->sendRadioConfigUpdate($radio);
         }

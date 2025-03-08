@@ -81,17 +81,8 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     @stack('scripts')
-    @stack('brandScripts')
-    @stack('tagScripts')
-    @stack('colorScripts')
-    @stack('sizeScripts')
-    @stack('materialsScripts')
-    @stack('capacitiesScripts')
     @stack('super_script')
-    @stack('asideFilter')
-    @stack('cProductScripts')
-    @stack('tProductScripts')
-    @stack('tproductscriptedit')
+
     
     {{-- <form id="logout-form" action="{{ route('super.signout') }}" method="POST" style="display: none;">
         @csrf

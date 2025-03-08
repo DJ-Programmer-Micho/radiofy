@@ -1,6 +1,6 @@
 <?php
 
-namespace App\View\Components\SuperAdmins\Auth;
+namespace App\View\Components\Admin\Auth;
 
 use Closure;
 use Illuminate\Contracts\View\View;
@@ -21,6 +21,6 @@ class AuthHeaderOne extends Component
      */
     public function render(): View|Closure|string
     {
-        return view('super-admins.components.auth-header-one');
+        return view('admin.components.auth-header-one');
     }
 }
