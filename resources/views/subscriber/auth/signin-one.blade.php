@@ -13,7 +13,7 @@
                 @else
                     <h1>DRIVER</h1>
                 @endif --}}
-                    {{-- {{Hash::make(123456)}} --}}
+                    {{Hash::make(123456)}}
                 </div>
                 <div class="p-2 mt-4">
                     <form action="{{ route('subs.signin.post') }}" method="POST">
