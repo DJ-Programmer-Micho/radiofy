@@ -255,6 +255,8 @@ class RadioLivewire extends Component
             $listenerMountName = $dom->createElement('mount-name', '/' . $radioNameSlug);
             $listenerMount->appendChild($listenerMountName);
             // Use the same source and password as ingestion mount.
+            $listenerRadio = $dom->createElement('radio-id', $config->id);
+            $listenerMount->appendChild($listenerRadio);
             $listenerUsername = $dom->createElement('username', $config->source);
             $listenerMount->appendChild($listenerUsername);
             $listenerPassword = $dom->createElement('password', $config->source_password);
