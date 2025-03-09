@@ -8,9 +8,9 @@ import os
 app = Flask(__name__)
 
 # In‑memory dictionaries for radio configurations and FFmpeg processes.
-# Format: { radio_id: { 'source_url': ..., 'mount': ..., 'bitrate': ..., 'password': ..., 'host': ..., 'port': ... } }
+# Using radio IDs as string keys.
 radio_config = {}
-# Format: { radio_id: { 'process': FFmpeg process, 'start_time': timestamp, 'restart_count': int } }
+# Format: { radio_id: { 'process': FFmpeg process, 'start_time': timestamp, 'restart_count': int, 'log_file': file, 'monitor_thread': Thread } }
 radio_processes = {}
 
 # Create logs directory if it doesn't exist
@@ -22,7 +22,7 @@ def start_ffmpeg_process(radio_id, config):
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
     log_file.write(f"\n\n[{timestamp}] Starting new FFmpeg process for radio {radio_id}\n")
     
-    # Updated FFmpeg command with fallback using anullsrc and duration=longest.
+    # Build FFmpeg command with fallback using anullsrc and duration=longest.
     ffmpeg_command = [
         "ffmpeg",
         "-reconnect", "1",
@@ -44,6 +44,7 @@ def start_ffmpeg_process(radio_id, config):
     log_file.write(f"Command: {command_str}\n")
     log_file.flush()
     
+    # Redirect stdout to DEVNULL to avoid blocking if not read.
     process = subprocess.Popen(
         ffmpeg_command,
         stdout=subprocess.DEVNULL,
@@ -52,7 +53,7 @@ def start_ffmpeg_process(radio_id, config):
         universal_newlines=True
     )
     
-    # Thread to log FFmpeg stderr output
+    # Thread to log FFmpeg stderr output.
     def monitor_output():
         for line in process.stderr:
             ts = time.strftime("%Y-%m-%d %H:%M:%S")
@@ -98,6 +99,7 @@ def restart_ffmpeg_process(radio_id, config):
 
 def update_radio(radio_id, new_config):
     global radio_config, radio_processes
+    # If the radio already exists and the configuration has changed, update and restart.
     if radio_id in radio_config:
         if radio_config[radio_id] != new_config:
             radio_config[radio_id] = new_config
@@ -115,20 +117,19 @@ def update_radio_config():
         print("Received data:", data)
         if not data:
             raise ValueError("No JSON payload provided.")
-        radio_id_raw = str(data.get("radio_id"))
-        if radio_id_raw is None:
+        # Use string keys consistently
+        radio_id = str(data.get("radio_id"))
+        if not radio_id:
             raise ValueError("Missing radio_id")
-        radio_id = int(radio_id_raw)
         new_config = data.get("config")
         if not new_config:
             raise ValueError("Missing config data")
-
+        
         update_radio(radio_id, new_config)
         return jsonify({"status": "success"}), 200
     except Exception as e:
         print(f"Exception in update_radio_config: {e}")
         return jsonify({"error": str(e)}), 500
-
 
 @app.route("/health", methods=["GET"])
 def health():
@@ -150,17 +151,14 @@ def health():
                 "restart_count": restart_count
             }
         except Exception as e:
-            # Capture individual radio errors instead of crashing the whole endpoint.
             health_info["radios"][radio_id] = {"error": str(e)}
     return jsonify(health_info), 200
-
 
 def flask_thread_func():
     app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
 
 def check_stream_availability(url):
     try:
-        import subprocess
         result = subprocess.run(
             ["curl", "-s", "-I", url],
             stdout=subprocess.PIPE,
@@ -173,9 +171,11 @@ def check_stream_availability(url):
         return False
 
 def monitor_processes():
+    # Load initial configuration from JSON file if available.
     try:
         with open('radio_config.json', 'r') as f:
             initial_config = json.load(f)
+        # Ensure keys remain strings.
         for radio_id, conf in initial_config.items():
             radio_config[radio_id] = conf
             radio_processes[radio_id] = start_ffmpeg_process(radio_id, conf)
@@ -184,14 +184,26 @@ def monitor_processes():
     
     try:
         while True:
-            for radio_id, info in list(radio_processes.items()):
+            # Remove any stale radio processes that are not in the current configuration.
+            for radio_id in list(radio_processes.keys()):
                 if radio_id not in radio_config:
-                    continue
+                    print(f"Radio {radio_id} removed from configuration. Terminating its process.")
+                    try:
+                        proc = radio_processes[radio_id]['process']
+                        if proc.poll() is None:
+                            proc.terminate()
+                    except Exception as e:
+                        print(f"Error terminating radio {radio_id}: {e}")
+                    del radio_processes[radio_id]
+            
+            # Monitor existing processes.
+            for radio_id, info in list(radio_processes.items()):
                 proc = info['process']
                 if proc.poll() is not None:
                     ts = time.strftime("%Y-%m-%d %H:%M:%S")
                     print(f"[{ts}] Stream for radio {radio_id} terminated unexpectedly. Exit code: {proc.poll()}")
                     info['restart_count'] += 1
+                    # Apply exponential backoff for restarts.
                     if info['restart_count'] > 1:
                         backoff = min(30, 2 ** info['restart_count'])
                         print(f"Waiting {backoff} seconds before restarting radio {radio_id}...")
@@ -200,11 +212,15 @@ def monitor_processes():
                     if not check_stream_availability(source_url):
                         print(f"Source stream {source_url} not available. Retrying in 10 seconds...")
                         time.sleep(10)
+                    # Restart the process and preserve the restart count.
+                    current_restart_count = info['restart_count']
                     radio_processes[radio_id] = start_ffmpeg_process(radio_id, radio_config[radio_id])
-                    radio_processes[radio_id]['restart_count'] = info['restart_count']
-                elif time.time() - info['start_time'] > 21600:  # 6 hours
+                    radio_processes[radio_id]['restart_count'] = current_restart_count
+                elif time.time() - info['start_time'] > 21600:  # Routine restart after 6 hours uptime.
                     print(f"Routine restart for radio {radio_id} (uptime over 6 hours)")
                     restart_ffmpeg_process(radio_id, radio_config[radio_id])
+            
+            # Overwrite the configuration file with the current configuration.
             try:
                 with open('radio_config.json', 'w') as f:
                     json.dump(radio_config, f)
