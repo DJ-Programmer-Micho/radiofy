@@ -241,7 +241,8 @@ class RadioLivewire extends Component
             $ingestionMount->appendChild($ingestionMountName);
             $ingestionUsername = $dom->createElement('username', $config->source);
             $ingestionMount->appendChild($ingestionUsername);
-            $ingestionPassword = $dom->createElement('password', $config->source_Password);
+            // Use the proper field name (lowercase) for password.
+            $ingestionPassword = $dom->createElement('password', $config->source_password);
             $ingestionMount->appendChild($ingestionPassword);
             $ingestionMaxListeners = $dom->createElement('max-listeners', 2);
             $ingestionMount->appendChild($ingestionMaxListeners);
@@ -252,16 +253,15 @@ class RadioLivewire extends Component
             $listenerMount->setAttribute('type', 'normal');
             $listenerMountName = $dom->createElement('mount-name', '/' . $radioNameSlug);
             $listenerMount->appendChild($listenerMountName);
-            $listenerUsername = $dom->createElement('username', 'source_lis');
+            // Use the same source and password as ingestion mount.
+            $listenerUsername = $dom->createElement('username', $config->source);
             $listenerMount->appendChild($listenerUsername);
-            // Use fixed password "password" for the listener mount.
-            $listenerPassword = $dom->createElement('password', 'password_lis');
+            $listenerPassword = $dom->createElement('password', $config->source_password);
             $listenerMount->appendChild($listenerPassword);
             $maxListenersValue = $config->plan ? $config->plan->max_listeners : 5;
             $maxListeners = $dom->createElement('max-listeners', $maxListenersValue);
             $listenerMount->appendChild($maxListeners);
-            // $burstSize = $dom->createElement('burst-size', $config->burst_size);
-            // $listenerMount->appendChild($burstSize);
+            
             if ($config->fallback_mount) {
                 $fallback = $dom->createElement('fallback-mount', $config->fallback_mount);
                 $listenerMount->appendChild($fallback);

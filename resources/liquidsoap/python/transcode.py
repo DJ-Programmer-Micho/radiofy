@@ -46,7 +46,7 @@ def start_ffmpeg_process(radio_id, config):
     
     process = subprocess.Popen(
         ffmpeg_command,
-        stdout=subprocess.PIPE,
+        stdout=subprocess.DEVNULL,
         stderr=subprocess.PIPE,
         bufsize=1,
         universal_newlines=True
@@ -73,24 +73,28 @@ def start_ffmpeg_process(radio_id, config):
     }
 
 def restart_ffmpeg_process(radio_id, config):
+    old_restart_count = 0
     if radio_id in radio_processes:
+        old_restart_count = radio_processes[radio_id].get('restart_count', 0)
         print(f"Restarting stream for radio {radio_id}")
         try:
-            if radio_processes[radio_id]['process'].poll() is None:
-                radio_processes[radio_id]['process'].terminate()
+            proc = radio_processes[radio_id]['process']
+            if proc.poll() is None:
+                proc.terminate()
                 for _ in range(10):
-                    if radio_processes[radio_id]['process'].poll() is not None:
+                    if proc.poll() is not None:
                         break
                     time.sleep(0.1)
-                if radio_processes[radio_id]['process'].poll() is None:
-                    radio_processes[radio_id]['process'].kill()
+                if proc.poll() is None:
+                    proc.kill()
             if 'log_file' in radio_processes[radio_id]:
                 radio_processes[radio_id]['log_file'].close()
         except Exception as e:
             print(f"Error shutting down FFmpeg for radio {radio_id}: {e}")
     
-    radio_processes[radio_id] = start_ffmpeg_process(radio_id, config)
-    radio_processes[radio_id]['restart_count'] = radio_processes.get(radio_id, {}).get('restart_count', 0)
+    new_proc_info = start_ffmpeg_process(radio_id, config)
+    new_proc_info['restart_count'] = old_restart_count + 1
+    radio_processes[radio_id] = new_proc_info
 
 def update_radio(radio_id, new_config):
     global radio_config, radio_processes
@@ -111,7 +115,7 @@ def update_radio_config():
         print("Received data:", data)
         if not data:
             raise ValueError("No JSON payload provided.")
-        radio_id_raw = data.get("radio_id")
+        radio_id_raw = str(data.get("radio_id"))
         if radio_id_raw is None:
             raise ValueError("Missing radio_id")
         radio_id = int(radio_id_raw)
