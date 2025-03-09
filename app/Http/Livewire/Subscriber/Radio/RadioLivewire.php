@@ -179,6 +179,7 @@ class RadioLivewire extends Component
             'source_url' => "http://192.168.0.113:8000{$sourceMount}",  // e.g., http://192.168.0.113:8000/source_radio_one1
             'mount'      => $mountName,  // e.g., /radio_one1
             'bitrate'    => $bitrate,
+            'source'     => $radio->source,
             'password'   => $radio->source_password,
             'host'       => '192.168.0.113',
             'port'       => 8000,
@@ -244,7 +245,7 @@ class RadioLivewire extends Component
             // Use the proper field name (lowercase) for password.
             $ingestionPassword = $dom->createElement('password', $config->source_password);
             $ingestionMount->appendChild($ingestionPassword);
-            $ingestionMaxListeners = $dom->createElement('max-listeners', 2);
+            $ingestionMaxListeners = $dom->createElement('max-listeners', 5);
             $ingestionMount->appendChild($ingestionMaxListeners);
             $parentNode->appendChild($ingestionMount);
     
@@ -261,7 +262,7 @@ class RadioLivewire extends Component
             $maxListenersValue = $config->plan ? $config->plan->max_listeners : 5;
             $maxListeners = $dom->createElement('max-listeners', $maxListenersValue);
             $listenerMount->appendChild($maxListeners);
-            
+
             if ($config->fallback_mount) {
                 $fallback = $dom->createElement('fallback-mount', $config->fallback_mount);
                 $listenerMount->appendChild($fallback);

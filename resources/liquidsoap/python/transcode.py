@@ -36,7 +36,7 @@ def start_ffmpeg_process(radio_id, config):
         "-b:a", f"{config['bitrate']}k",
         "-ar", "44100",
         "-f", "mp3",
-        f"icecast://source:{config['password']}@{config['host']}:{config['port']}{config['mount']}"
+        f"icecast://{config['source']}:{config['password']}@{config['host']}:{config['port']}{config['mount']}"
     ]
     
     command_str = ' '.join(ffmpeg_command)
@@ -237,6 +237,32 @@ def monitor_processes():
                 json.dump(radio_config, f)
         except Exception as e:
             print(f"Error saving radio configuration: {e}")
+
+
+@app.route("/delete_radio_config", methods=["POST"])
+def delete_radio_config():
+    try:
+        data = request.json
+        radio_id = str(data.get("radio_id"))
+        if not radio_id:
+            raise ValueError("Missing radio_id")
+        # Remove from the in-memory config
+        if radio_id in radio_config:
+            del radio_config[radio_id]
+        # Terminate process if exists
+        if radio_id in radio_processes:
+            proc = radio_processes[radio_id]['process']
+            if proc.poll() is None:
+                proc.terminate()
+            del radio_processes[radio_id]
+        # Overwrite the JSON file with updated config
+        with open('radio_config.json', 'w') as f:
+            json.dump(radio_config, f)
+        return jsonify({"status": "deleted"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 
 if __name__ == "__main__":
     flask_thread = threading.Thread(target=flask_thread_func, daemon=True)
