@@ -373,7 +373,7 @@ class RadioLivewire extends Component
             
             // If a dynamic source is found, update highest_peak_listeners if needed.
             if ($sourceData) {
-                $currentPeak = (int)$sourceData['listener_peak'];
+                $currentPeak = (int)$sourceData['listener_peak'] ?? 0;
                 // Access the associated profile (if it exists)
                 if ($radio->radio_configuration_profile) {
                     $storedPeak = (int)$radio->radio_configuration_profile->highest_peak_listeners;
