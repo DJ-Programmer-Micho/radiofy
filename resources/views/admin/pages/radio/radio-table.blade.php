@@ -25,6 +25,9 @@
         <button type="button" class="btn btn-info" wire:click="restartAllRadios">
             <i class="fa-solid fa-sync"></i> {{ __('Update Radio Python XML') }}
         </button>
+        <button type="button" class="btn btn-info" wire:click="generateStatusFile">
+            <i class="fa-solid fa-sync"></i> {{ __('Update Radio JSON XML') }}
+        </button>
         <div class="container my-3">
             @if (session()->has('xml_update'))
                 <div class="alert alert-success mt-2">
