@@ -1,5 +1,5 @@
 <div class="page-content">
-    @include('admin.pages.radio.radio-form', ['title' => "Radio Configuration"])
+    {{-- @include('admin.pages.radio.radio-form', ['title' => "Radio Configuration"]) --}}
     <div class="container-fluid">
         <!-- Page Title -->
         <div class="row">
