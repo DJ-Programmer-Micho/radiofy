@@ -69,8 +69,10 @@ class RadioLivewire extends Component
         
         // Immediately send configuration update to the Python service.
         $this->sendRadioConfigUpdate($radio);
-        
-        session()->flash('message', 'Radio added successfully.');
+        $this->dispatchBrowserEvent('alert', [
+            'type' => 'success',
+            'message' => __('Radio Added Successfully')
+        ]);
         $this->resetInputFields();
     }
     
@@ -102,8 +104,10 @@ class RadioLivewire extends Component
             ]);
             // Update Python transcoding service with new configuration.
             $this->sendRadioConfigUpdate($radio);
-    
-            session()->flash('message', 'Radio updated successfully.');
+            $this->dispatchBrowserEvent('alert', [
+                'type' => 'success',
+                'message' => __('Radio Updated Successfully')
+            ]);
             $this->resetInputFields();
         }
     }
@@ -153,9 +157,15 @@ class RadioLivewire extends Component
         $radio = RadioConfiguration::find($id);
         if ($radio) {
             $this->sendRadioConfigUpdate($radio);
-            session()->flash('message', "Radio {$radio->radio_name} updated in Python service.");
+            $this->dispatchBrowserEvent('alert', [
+                'type' => 'success',
+                'message' => __('Radio {$radio->radio_name} updated in Python service.')
+            ]);
         } else {
-            session()->flash('message', "Radio not found.");
+            $this->dispatchBrowserEvent('alert', [
+                'type' => 'error',
+                'message' => __('Radio Not Found')
+            ]);
         }
     }
 
@@ -215,7 +225,10 @@ class RadioLivewire extends Component
         $dom->preserveWhiteSpace = false;
         $dom->formatOutput = true;
         if (!$dom->load($templatePath)) {
-            session()->flash('xml_update', 'Failed to load XML template.');
+            $this->dispatchBrowserEvent('alert', [
+                'type' => 'error',
+                'message' => __('Faild to update XML')
+            ]);
             return;
         }
     
@@ -288,10 +301,20 @@ class RadioLivewire extends Component
     
         if ($dom->save($xmlFilePath)) {
             session()->flash('xml_update', 'icecast.xml updated successfully.');
+            $this->dispatchBrowserEvent('alert', [
+                'type' => 'success',
+                'message' => __('icecast.xml updated successfully')
+            ]);
             $output = shell_exec('sudo systemctl reload icecast2 2>&1');
-            session()->flash('xml_reload', 'Icecast reloaded: ' . $output);
+            $this->dispatchBrowserEvent('alert', [
+                'type' => 'info',
+                'message' => __('Icecast Reloaded in SERVER ' . $output)
+            ]);
         } else {
-            session()->flash('xml_update', 'Failed to update icecast.xml.');
+            $this->dispatchBrowserEvent('alert', [
+                'type' => 'error',
+                'message' => __('Faild to update the icecast.xml')
+            ]);
         }
     }
     
@@ -304,8 +327,10 @@ class RadioLivewire extends Component
         foreach ($radios as $radio) {
             $this->sendRadioConfigUpdate($radio);
         }
-    
-        session()->flash('message', 'All active radios have been updated.');
+        $this->dispatchBrowserEvent('alert', [
+            'type' => 'success',
+            'message' => __('NAll Active Radios have been updated')
+        ]);
     }
 
     public function generateStatusFile()
@@ -318,8 +343,11 @@ class RadioLivewire extends Component
             ]);
             $icecastStatus = json_decode($response->getBody(), true);
         } catch (\Exception $e) {
+            $this->dispatchBrowserEvent('alert', [
+                'type' => 'success',
+                'message' => __('Faild to fetch icecast status')
+            ]);
             Log::error('Failed to fetch Icecast status: ' . $e->getMessage());
-            session()->flash('message', 'Failed to fetch Icecast status.');
             return;
         }
         
@@ -405,13 +433,19 @@ class RadioLivewire extends Component
         $outputJson = json_encode($output, JSON_PRETTY_PRINT);
         
         // 5. Write the output to a file (for example, in the public folder).
-        $filePath = public_path('mradiofy-status-json.json');
+        $filePath = public_path('api/v1/stats/mradiofy-status-json.json');
         try {
             file_put_contents($filePath, $outputJson);
-            session()->flash('message', 'Status file generated successfully.');
+            $this->dispatchBrowserEvent('alert', [
+                'type' => 'success',
+                'message' => __('New Genre Added Successfully')
+            ]);
         } catch (\Exception $e) {
             Log::error('Failed to write status file: ' . $e->getMessage());
-            session()->flash('message', 'Failed to write status file.');
+            $this->dispatchBrowserEvent('alert', [
+                'type' => 'error',
+                'message' => __('Faild to write JSON file')
+            ]);
         }
     }
     
