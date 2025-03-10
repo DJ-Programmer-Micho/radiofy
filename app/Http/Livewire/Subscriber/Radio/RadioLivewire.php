@@ -274,7 +274,7 @@ class RadioLivewire extends Component
                 $listenerMount->appendChild($bitrate);
             }
             if ($config->genre) {
-                $genre = $dom->createElement('genre', $config->genre);
+                $genre = $dom->createElement('genre', $config->id);
                 $listenerMount->appendChild($genre);
             }
             if ($config->description) {

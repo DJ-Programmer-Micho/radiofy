@@ -274,7 +274,7 @@ class RadioLivewire extends Component
                 $listenerMount->appendChild($bitrate);
             }
             if ($config->genre) {
-                $genre = $dom->createElement('genre', $config->genre);
+                $genre = $dom->createElement('genre', $config->id);
                 $listenerMount->appendChild($genre);
             }
             if ($config->description) {
@@ -307,6 +307,115 @@ class RadioLivewire extends Component
     
         session()->flash('message', 'All active radios have been updated.');
     }
+
+    public function generateStatusFile()
+    {
+        // 1. Fetch Icecast status JSON.
+        try {
+            $client = new \GuzzleHttp\Client();
+            $response = $client->get('http://192.168.0.113:8000/status-json.xsl', [
+                'timeout' => 10,
+            ]);
+            $icecastStatus = json_decode($response->getBody(), true);
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch Icecast status: ' . $e->getMessage());
+            session()->flash('message', 'Failed to fetch Icecast status.');
+            return;
+        }
+        
+        // Get the list of dynamic sources.
+        // Depending on your Icecast configuration the array key may be 'source' or 'sources'.
+        $sources = $icecastStatus['icestats']['source'] ?? [];
+        
+        // 2. Get all radio configurations from the database.
+        $radios = \App\Models\RadioConfiguration::with('radio_configuration_profile', 'plan')->get();
+        
+        $mergedData = [];
+        
+        // 3. Loop over each radio configuration.
+        foreach ($radios as $radio) {
+            // Generate mount name from radio name, e.g. "Radio One" becomes "/radio_one"
+            $mount = '/' . strtolower(str_replace(' ', '_', $radio->radio_name));
+            
+            // Try to find a matching dynamic source.
+            // We'll assume that the listenurl contains the mount.
+            $sourceData = collect($sources)->first(function ($s) use ($mount) {
+                return isset($s['listenurl']) && strpos($s['listenurl'], $mount) !== false;
+            });
+            
+            // If a dynamic source is found, update highest_peak_listeners if needed.
+            if ($sourceData) {
+                $currentPeak = (int)$sourceData['listener_peak'];
+                // Access the associated profile (if it exists)
+                if ($radio->radio_configuration_profile) {
+                    $storedPeak = (int)$radio->radio_configuration_profile->highest_peak_listeners;
+                    if ($currentPeak > $storedPeak) {
+                        $radio->radio_configuration_profile->highest_peak_listeners = $currentPeak;
+                        $radio->radio_configuration_profile->save();
+                    }
+                }
+            }
+            
+            // Build a merged entry.
+            $mergedEntry = [
+                'mount' => $mount,
+                // Use the radio id from the database
+                'radio-id' => $radio->id,
+                // Static configuration from the database can include other fields if needed.
+                'static' => [
+                    'radio_name' => $radio->radio_name,
+                    // You can add more static fields here.
+                ],
+                // Dynamic data from Icecast; if no matching source, dynamic is null.
+                'dynamic' => $sourceData ?: null,
+            ];
+            
+            // For convenience, also produce a flattened entry with the keys we need.
+            // We’ll produce an object like:
+            // { "mount": "/m_radio_iraq", "radio-id": X, "bitrate": "128", "listener_peak": 2, "listeners": 2, "listenurl": "http://localhost:8000/m_radio_iraq" }
+            if ($sourceData) {
+                $flattened = [
+                    'mount' => $mount,
+                    'radio-id' => $radio->id,
+                    'bitrate' => (string)$sourceData['bitrate'],
+                    'listener_peak' => (int)$sourceData['listener_peak'],
+                    'listeners' => (int)$sourceData['listeners'],
+                    'listenurl' => $sourceData['listenurl'],
+                ];
+            } else {
+                // If no dynamic data, use nulls (or defaults)
+                $flattened = [
+                    'mount' => $mount,
+                    'radio-id' => $radio->id,
+                    'bitrate' => null,
+                    'listener_peak' => null,
+                    'listeners' => null,
+                    'listenurl' => "http://192.168.0.113:8000" . $mount,
+                ];
+            }
+            
+            $mergedData[] = $flattened;
+        }
+        
+        // 4. Prepare the output JSON.
+        $output = [
+            'sources' => $mergedData,
+        ];
+        
+        $outputJson = json_encode($output, JSON_PRETTY_PRINT);
+        
+        // 5. Write the output to a file (for example, in the public folder).
+        $filePath = public_path('mradiofy-status-json.json');
+        try {
+            file_put_contents($filePath, $outputJson);
+            session()->flash('message', 'Status file generated successfully.');
+        } catch (\Exception $e) {
+            Log::error('Failed to write status file: ' . $e->getMessage());
+            session()->flash('message', 'Failed to write status file.');
+        }
+    }
+    
+
 }
 
 
