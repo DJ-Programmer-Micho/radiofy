@@ -17,3 +17,8 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+public/mradiofy-status-json.json
+resources/liquidsoap/generated/
+resources/liquidsoap/python/logs/
+resources/liquidsoap/python/radio_config.json
+
