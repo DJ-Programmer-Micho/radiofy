@@ -187,11 +187,11 @@ class RadioLivewire extends Component
         // Build the configuration payload.
         // We hardcode the Icecast port (8000) here.
         $config = [
-            'source_url' => "http://192.168.0.113:8000{$sourceMount}",  // e.g., http://192.168.0.113:8000/source_radio_one1
-            'mount'      => $mountName,  // e.g., /radio_one1
-            'bitrate'    => $bitrate,
-            'source'     => $radio->source,
-            'password'   => $radio->source_password,
+            'source_url' => "http://192.168.0.113:8000{$sourceMount}",  // e.g., http://192.168.0.113:8000/source_my-radio
+            'mount'      => $sourceMount,  // e.g., /my-radio
+            'bitrate'    => $bitrate, // e.g., /128
+            'source'     => $radio->source, // e.g., /radio5@mradiofy
+            'password'   => $radio->source_password, // e.g., /123456789
             'host'       => '192.168.0.113',
             'port'       => 8000,
         ];
