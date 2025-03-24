@@ -104,6 +104,12 @@
         }
     </script>
      --}}
+     <script>
+        if (window.currentHowl) {
+            window.currentHowl.unload();
+            console.log("Audio player unloaded on logout.");
+        }
+    </script>
     <script>
         window.addEventListener('alert', event => { 
             toastr[event.detail.type](event.detail.message, 

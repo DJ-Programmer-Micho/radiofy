@@ -234,7 +234,6 @@ class PlanLivewire extends Component
         }
 
         $tableData = $query->orderBy('priority', 'ASC')->paginate(10)->withQueryString();
-
         return view('admin.pages.plan.plan-table', [
             'tableData' => $tableData,
         ]);

@@ -211,11 +211,12 @@
                         </div>
                         <div class="card-body">
                             <h6>{{ env('APP_URL').'/'.$radioNameSlug }}</h6>
+                            <h6>{{ app('server_ip').':'.app('server_post').'/'.$radioNameSlug }}</h6>
                             <div class="position-relative banner">
                                 @if($banner)
                                     <img src="{{ asset('storage/' . $banner) }}" class="img-fluid" alt="Banner Image">
                                 @else
-                                    <img src="https://d7tztcuqve7v9.cloudfront.net/rest/yamiyam/setting/yamiyam_hed_2023201117005030471039.jpeg" class="img-fluid" alt="Default Banner">
+                                    <img src="{{ asset('assets/logo/mradiofy-banner.png') }}" class="img-fluid" alt="Default Banner">
                                 @endif
                               <div class="position-absolute top-0 start-0 w-100 h-100" style="background-color: rgba(0, 0, 0, 0.4);"></div> 
                                 <div class="position-absolute bottom-0 start-0 p-3 text-white">
@@ -280,7 +281,7 @@
                                     @if($logo)
                                         <img src="{{ asset('storage/' . $logo) }}" class="img-fluid" alt="Logo">
                                     @else
-                                        <img src="https://d7tztcuqve7v9.cloudfront.net/rest/yamiyam/setting/yamiyam_logo_2023181117003269916864.jpeg" class="img-fluid" alt="Default Logo">
+                                        <img src="{{ asset('assets/logo/mradiofy-logo.png') }}" class="img-fluid" alt="Default Logo">
                                     @endif
                                 </div>
                                 <div>
@@ -458,11 +459,11 @@
         fileParameterName: 'file',
         labelIdle: `Drag & Drop your picture or <span class="filepond--label-action">Browse</span>`,
         imagePreviewHeight: 150,
-        imageCropAspectRatio: '3.6:1',
+        imageCropAspectRatio: '3.48:1',
         imageCropAutoCropArea: 1,
         allowImageCrop: true, // Enable cropping
-        imageResizeTargetWidth: 2160,
-        imageResizeTargetHeight: 600,
+        imageResizeTargetWidth: 2660,
+        imageResizeTargetHeight: 764,
         allowImageResize: true,
         imageResizeMode: 'cover',
         allowImageTransform: true,

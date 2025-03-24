@@ -109,6 +109,12 @@
             }
         });
     </script>
+    <script>
+        if (window.currentHowl) {
+            window.currentHowl.unload();
+            console.log("Audio player unloaded on logout.");
+        }
+    </script>
 
 @livewireScripts
 @stack('radio_script')

@@ -1,0 +1,69 @@
+.radio-card-1 .player-icon {
+    position: relative;
+    display: inline-block;
+    transition: opacity 0.3s ease;
+}
+
+.radio-card-1 .player-icon:hover {
+    opacity: 0.6;
+}
+
+/* Use a pseudo-element on the container */
+.radio-card-1 .player-icon::after {
+    content: "\f04b";
+    /* Font Awesome's "play" icon */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    /* For the solid style */
+    font-size: 2rem;
+    color: #fff;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.radio-card-1 .player-icon:hover::after {
+    opacity: 1;
+}
+
+.radio-card-1 a:hover {
+    text-decoration: underline;
+}
+
+.profile-wrapper {
+    padding-bottom: 4.5em
+}
+
+.profile-wid-bg {
+    height: 380px;
+}
+
+@media (max-width: 768px) {
+    .profile-wrapper {
+        padding-bottom: .5em
+    }
+
+    .profile-wid-bg {
+        height: 250px;
+    }
+}
+
+.profile-nav.nav-pills .nav-link {
+    color: #ffffffee;
+    background-color: #b6b6b69a;
+}
+
+.profile-nav.nav-pills .nav-link::before {
+    background-color: #cc0022cc
+}
+
+.profile-wrapper i{
+  font-size: 25px;
+}
+.profile-wrapper .nav-link{
+  padding: 0.2rem 0.7rem;
+}

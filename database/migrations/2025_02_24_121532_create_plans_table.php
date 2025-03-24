@@ -15,9 +15,13 @@ return new class extends Migration
             $table->id();
             $table->integer('bitrate');         
             $table->integer('max_listeners');   
-            $table->decimal('sell_price', 8, 2);
+            $table->decimal('sell_price_monthly', 8, 2);
+            $table->decimal('sell_price_yearly', 8, 2);
             $table->integer('priority');
             $table->unsignedInteger('status')->default(1);
+            $table->unsignedInteger('support')->default(0);
+            $table->unsignedInteger('ribbon')->default(0);
+            $table->string('rib_text');
             $table->timestamps();
         });
     }

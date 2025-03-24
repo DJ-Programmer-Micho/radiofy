@@ -54,15 +54,23 @@
                     <div class="collapse menu-dropdown" id="sidebarprops">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a wire:navigate href="{{route('subs-radios')}}" class="nav-link" data-key="r-add-radio">{{__('Add New Radio')}}</a>
-                            </li>
-                            <li class="nav-item">
                                 <a wire:navigate href="{{route('subs-radios')}}" class="nav-link" data-key="r-radio">{{__('Radio\'s')}}</a>
+                            </li>                          
+                        </ul>
+                    </div>
+                </li> <!-- end Dashboard Menu -->
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarplans" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarplans">
+                        <i class="bx bx-list-ul"></i> <span data-key="t-dashboards">{{__('Plans')}}</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarplans">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a wire:navigate href="{{route('subs.my.plan')}}" class="nav-link" data-key="r-my-radio">{{__('Your Plan\'s')}}</a>
                             </li>
                             <li class="nav-item">
-                                <a wire:navigate href="{{route('radio-languages')}}" class="nav-link" data-key="u-language">{{__('Language\'s')}}</a>
-                            </li>
-                            
+                                <a wire:navigate href="{{route('subs.new.plan')}}" class="nav-link" data-key="r-add-radio">{{__('Available Plan\'s')}}</a>
+                            </li>                      
                         </ul>
                     </div>
                 </li> <!-- end Dashboard Menu -->

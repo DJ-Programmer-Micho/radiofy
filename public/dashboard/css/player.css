@@ -1,0 +1,158 @@
+@import url(//db.onlinewebfonts.com/c/860c3ec7bbc5da3e97233ccecafe512e?family=Circular+Std+Book);
+
+.music-player {
+    --primary-color: #ddd;
+    --text-color: #aaa;
+    --secondary-color: #cc0022;
+    --hot-color: #2d5;
+    --padding: 1em;
+    background-color: #111;
+    display: flex;
+    flex-direction: column;
+    /* space between the top row and the bottom progress bar */
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    height: 7rem;
+    padding: var(--padding);
+    color: var(--primary-color);
+}
+
+/* Top controls row: contains song-bar, control-buttons, and other-features */
+.top-controls {
+    width: 100%;
+    position: relative;
+    height: 100%; /* make sure it fills the available height */
+  }
+  
+
+/* Song Bar */
+.song-bar {
+    position: absolute;
+    left: var(--padding);
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+.song-infos {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+}
+.image-container,
+.image-container img {
+    width: 4.5em;
+    height: 4.5em;
+    object-fit: cover;
+}
+.song-description p {
+    margin: 0.2em;
+}
+.title,
+.artist {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+}
+.title:hover,
+.artist:hover {
+    text-decoration: underline;
+}
+.artist {
+    color: var(--text-color);
+}
+.icons {
+    margin-left: auto;
+    padding-right: var(--padding);
+}
+
+/* Control Buttons */
+.control-buttons {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.play-pause {
+    display: inline-block;
+    padding: 1em;
+    font-size: 35px;
+}
+.play-pause:hover {
+    transform: scale(1.1);
+}
+
+/* Other Features */
+.other-features {
+    position: absolute;
+    right: var(--padding);
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 1em;
+  }
+/* Progress container now pinned at the very bottom */
+.progress-container {
+    position: absolute;
+    bottom: 0;
+    left: var(--padding);
+    right: var(--padding);
+    display: flex;
+    justify-content: center;
+}
+.progress-bar {
+    position: relative;
+    width: 100%;
+    height: 4px;
+    border-radius: 10px;
+    background-color: #ccc4;
+    overflow: hidden;
+}
+.progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    border-radius: 10px;
+    background-color: var(--secondary-color);
+    transition: width 0.1s linear;
+}
+.progress-bar:hover .progress {
+    background-color: var(--hot-color);
+}
+
+/* Volume control */
+.volume-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.7em;
+}
+.volume-bar .progress-bar {
+    width: 6em;
+}
+/* Mobile styles: Hide other-features and left-align top-controls */
+@media (max-width: 768px) {
+    .other-features {
+        display: none;
+    }
+    .top-controls {
+        justify-content: flex-start;
+        gap: 1em;
+    }
+    .control-buttons {
+        position: absolute;
+        left: 92%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+}

@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire\Subscriber\Radio;
 
+use Carbon\Carbon;
 use App\Models\RadioConfiguration;
 use GuzzleHttp\Client;
 use Livewire\Component;
@@ -27,6 +28,8 @@ class RadioLivewire extends Component
     public $status;
     public $plans = [];
 
+    public $now;
+
     // Render / search parameters
     public $search = '';
     public $statusFilter = 'all';
@@ -35,6 +38,7 @@ class RadioLivewire extends Component
     public $nonActiveCount = 0;
     
     public function mount(){
+        $this->now = \Carbon\Carbon::now();
         $this->status = 1;
         $this->statusFilter = request()->query('statusFilter', 'all');
         $this->page = request()->query('page', 1);

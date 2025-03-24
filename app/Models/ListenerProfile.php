@@ -9,16 +9,21 @@ class ListenerProfile extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'subscriber_id',
+        'listener_id',
         'first_name',
         'last_name',
-        'business_module',
+        'dob',
+        'gender',
         'country',
         'city',
         'address',
         'zip_code',
         'phone_number',
         'avatar',
+        'news',
+        'reg',
+        'terms',
+        'policy',
     ];
 
     public function listener() { return $this->belongsTo(Listener::class); }

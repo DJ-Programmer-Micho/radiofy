@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('username')->unique();
             $table->string('email')->unique();
             $table->string('password');
-            $table->string('status')->default('active');
+            $table->unsignedInteger('status')->default(1);
             $table->boolean('email_verify')->default(false);
             $table->boolean('phone_verify')->default(false);
             $table->string('email_otp_number')->nullable();

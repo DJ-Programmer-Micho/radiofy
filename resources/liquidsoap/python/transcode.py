@@ -7,22 +7,33 @@ import os
 
 app = Flask(__name__)
 
+# Use an absolute path for radio_config.json based on this script's directory.
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CONFIG_FILE = os.path.join(BASE_DIR, "radio_config.json")
+
 # In‑memory dictionaries for radio configurations and FFmpeg processes.
-# Using radio IDs as string keys.
+# Keys are strings.
 radio_config = {}
 # Format: { radio_id: { 'process': FFmpeg process, 'start_time': timestamp, 'restart_count': int, 'log_file': file, 'monitor_thread': Thread } }
 radio_processes = {}
 
 # Create logs directory if it doesn't exist
-os.makedirs('logs', exist_ok=True)
+LOGS_DIR = os.path.join(BASE_DIR, "logs")
+os.makedirs(LOGS_DIR, exist_ok=True)
+
 
 def start_ffmpeg_process(radio_id, config):
-    log_path = f"logs/radio_{radio_id}.log"
-    log_file = open(log_path, "a")
+    log_path = os.path.join(LOGS_DIR, f"radio_{radio_id}.log")
+    try:
+        log_file = open(log_path, "a")
+    except Exception as e:
+        print(f"Error opening log file {log_path}: {e}")
+        raise
+
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
     log_file.write(f"\n\n[{timestamp}] Starting new FFmpeg process for radio {radio_id}\n")
     
-    # Build FFmpeg command with fallback using anullsrc and duration=longest.
+    # Build FFmpeg command with fallback using anullsrc.
     ffmpeg_command = [
         "ffmpeg",
         "-reconnect", "1",
@@ -44,7 +55,6 @@ def start_ffmpeg_process(radio_id, config):
     log_file.write(f"Command: {command_str}\n")
     log_file.flush()
     
-    # Redirect stdout to DEVNULL to avoid blocking if not read.
     process = subprocess.Popen(
         ffmpeg_command,
         stdout=subprocess.DEVNULL,
@@ -53,7 +63,6 @@ def start_ffmpeg_process(radio_id, config):
         universal_newlines=True
     )
     
-    # Thread to log FFmpeg stderr output.
     def monitor_output():
         for line in process.stderr:
             ts = time.strftime("%Y-%m-%d %H:%M:%S")
@@ -72,6 +81,7 @@ def start_ffmpeg_process(radio_id, config):
         'log_file': log_file,
         'monitor_thread': monitor_thread
     }
+
 
 def restart_ffmpeg_process(radio_id, config):
     old_restart_count = 0
@@ -97,9 +107,9 @@ def restart_ffmpeg_process(radio_id, config):
     new_proc_info['restart_count'] = old_restart_count + 1
     radio_processes[radio_id] = new_proc_info
 
+
 def update_radio(radio_id, new_config):
     global radio_config, radio_processes
-    # If the radio already exists and the configuration has changed, update and restart.
     if radio_id in radio_config:
         if radio_config[radio_id] != new_config:
             radio_config[radio_id] = new_config
@@ -110,6 +120,7 @@ def update_radio(radio_id, new_config):
         radio_config[radio_id] = new_config
         radio_processes[radio_id] = start_ffmpeg_process(radio_id, new_config)
 
+
 @app.route("/update_radio_config", methods=["POST"])
 def update_radio_config():
     try:
@@ -117,7 +128,6 @@ def update_radio_config():
         print("Received data:", data)
         if not data:
             raise ValueError("No JSON payload provided.")
-        # Use string keys consistently
         radio_id = str(data.get("radio_id"))
         if not radio_id:
             raise ValueError("Missing radio_id")
@@ -130,6 +140,7 @@ def update_radio_config():
     except Exception as e:
         print(f"Exception in update_radio_config: {e}")
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/health", methods=["GET"])
 def health():
@@ -154,8 +165,10 @@ def health():
             health_info["radios"][radio_id] = {"error": str(e)}
     return jsonify(health_info), 200
 
+
 def flask_thread_func():
     app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
+
 
 def check_stream_availability(url):
     try:
@@ -170,17 +183,20 @@ def check_stream_availability(url):
         print(f"Error checking stream availability: {e}")
         return False
 
+
 def monitor_processes():
-    # Load initial configuration from JSON file if available.
-    try:
-        with open('radio_config.json', 'r') as f:
-            initial_config = json.load(f)
-        # Ensure keys remain strings.
-        for radio_id, conf in initial_config.items():
-            radio_config[radio_id] = conf
-            radio_processes[radio_id] = start_ffmpeg_process(radio_id, conf)
-    except FileNotFoundError:
-        print("No initial configuration file found. Waiting for updates...")
+    # Attempt to load configuration from CONFIG_FILE if it exists and is non-empty.
+    if os.path.exists(CONFIG_FILE) and os.path.getsize(CONFIG_FILE) > 0:
+        try:
+            with open(CONFIG_FILE, 'r') as f:
+                initial_config = json.load(f)
+            for radio_id, conf in initial_config.items():
+                radio_config[radio_id] = conf
+                radio_processes[radio_id] = start_ffmpeg_process(radio_id, conf)
+        except Exception as e:
+            print(f"Error loading configuration from {CONFIG_FILE}: {e}")
+    else:
+        print("No initial configuration file found or file is empty. Waiting for updates...")
     
     try:
         while True:
@@ -203,26 +219,24 @@ def monitor_processes():
                     ts = time.strftime("%Y-%m-%d %H:%M:%S")
                     print(f"[{ts}] Stream for radio {radio_id} terminated unexpectedly. Exit code: {proc.poll()}")
                     info['restart_count'] += 1
-                    # Apply exponential backoff for restarts.
                     if info['restart_count'] > 1:
                         backoff = min(30, 2 ** info['restart_count'])
                         print(f"Waiting {backoff} seconds before restarting radio {radio_id}...")
                         time.sleep(backoff)
-                    source_url = radio_config[radio_id]['source_url']
-                    if not check_stream_availability(source_url):
+                    source_url = radio_config[radio_id].get('source_url')
+                    if not source_url or not check_stream_availability(source_url):
                         print(f"Source stream {source_url} not available. Retrying in 10 seconds...")
                         time.sleep(10)
-                    # Restart the process and preserve the restart count.
                     current_restart_count = info['restart_count']
                     radio_processes[radio_id] = start_ffmpeg_process(radio_id, radio_config[radio_id])
                     radio_processes[radio_id]['restart_count'] = current_restart_count
-                elif time.time() - info['start_time'] > 21600:  # Routine restart after 6 hours uptime.
+                elif time.time() - info['start_time'] > 21600:  # 6 hours
                     print(f"Routine restart for radio {radio_id} (uptime over 6 hours)")
                     restart_ffmpeg_process(radio_id, radio_config[radio_id])
             
-            # Overwrite the configuration file with the current configuration.
+            # Save the current configuration to disk.
             try:
-                with open('radio_config.json', 'w') as f:
+                with open(CONFIG_FILE, 'w') as f:
                     json.dump(radio_config, f)
             except Exception as e:
                 print(f"Error saving radio configuration: {e}")
@@ -233,35 +247,10 @@ def monitor_processes():
             if info['process'].poll() is None:
                 info['process'].terminate()
         try:
-            with open('radio_config.json', 'w') as f:
+            with open(CONFIG_FILE, 'w') as f:
                 json.dump(radio_config, f)
         except Exception as e:
             print(f"Error saving radio configuration: {e}")
-
-
-@app.route("/delete_radio_config", methods=["POST"])
-def delete_radio_config():
-    try:
-        data = request.json
-        radio_id = str(data.get("radio_id"))
-        if not radio_id:
-            raise ValueError("Missing radio_id")
-        # Remove from the in-memory config
-        if radio_id in radio_config:
-            del radio_config[radio_id]
-        # Terminate process if exists
-        if radio_id in radio_processes:
-            proc = radio_processes[radio_id]['process']
-            if proc.poll() is None:
-                proc.terminate()
-            del radio_processes[radio_id]
-        # Overwrite the JSON file with updated config
-        with open('radio_config.json', 'w') as f:
-            json.dump(radio_config, f)
-        return jsonify({"status": "deleted"}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
 
 
 if __name__ == "__main__":

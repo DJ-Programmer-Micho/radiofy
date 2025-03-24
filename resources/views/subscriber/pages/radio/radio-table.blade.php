@@ -21,9 +21,9 @@
             </div>
         </div>
         <!-- Add Radio Button -->
-        <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addRadioModal">
-            <i class="fa-regular fa-plus me-2"></i>{{ __('Add Radio') }}
-        </button>
+        <a href="{{ route('subs.new.plan') }}" class="btn btn-primary mb-3">
+            <i class="fa-solid fa-plus me-2"></i>{{ __('Add Radio') }}
+        </a>
         <!-- Radio Table -->
         <div class="row">
             <div class="col-12">
@@ -72,6 +72,7 @@
                                             <th class="text-center">{{ __('Radio Name') }}</th>
                                             <th class="text-center">{{ __('Highest Listeners') }}</th>
                                             <th class="text-center">{{ __('Server Mount') }}</th>
+                                            <th class="text-center">{{ __('Radio Expire') }}</th>
                                             <th class="text-center">{{ __('Status') }}</th>
                                             <th class="text-center">{{ __('Radio Refresh') }}</th>
                                             <th class="text-center">{{ __('Action') }}</th>
@@ -84,7 +85,7 @@
                                                     @if($data->radio_configuration_profile->logo)
                                                         <img src="{{ asset('storage/' . $data->radio_configuration_profile->logo) }}" class="img-fluid" width="50" height="50" alt="Logo">
                                                     @else
-                                                        <img src="https://d7tztcuqve7v9.cloudfront.net/rest/yamiyam/setting/yamiyam_logo_2023181117003269916864.jpeg" class="img-fluid" width="50" height="50" alt="Default Logo">
+                                                        <img src="{{ asset('assets/logo/mradiofy-logo.png') }}" class="img-fluid" width="50" height="50" alt="Default Logo">
                                                     @endif
                                             </td>
                                             <td class="align-middle text-center">
@@ -97,6 +98,19 @@
                                                 <a href="{{ env('APP_URL').'/'.$data->radio_name_slug ?? 'Unknown' }}" target="blank" class="text-decoration-underline">
                                                     {{ env('APP_URL').'/'.$data->radio_name_slug ?? 'Unknown' }} <i class="fa-solid fa-arrow-up-right-from-square"></i>
                                                 </a>
+                                            </td>
+                                            @php
+                                                $expire = \Carbon\Carbon::parse($data->duration->expire_date);
+                                            @endphp
+                                            
+                                            <td class="align-middle text-center">
+                                                @if($expire->isPast())
+                                                    <span class="text-danger"><i class="fa-solid fa-skull-crossbones fa-beat-fade"></i> {{ $expire->format('Y-m-d H:i') }}</span>
+                                                @elseif($now->diffInDays($expire) <= 7)
+                                                    <span class="text-warning"><i class="fa-solid fa-triangle-exclamation fa-bounce"></i> {{ $expire->format('Y-m-d H:i') }}</span>
+                                                @else
+                                                    <span class="text-success">{{ $expire->format('Y-m-d H:i') }}</span>
+                                                @endif
                                             </td>
                                             <td class="align-middle text-center">
                                                 <span class="badge {{ $data->status ? 'bg-success' : 'bg-danger' }} p-2" style="font-size: 0.7rem;">
@@ -114,6 +128,12 @@
                                                         <i class="ri-more-fill"></i>
                                                     </button>
                                                     <ul class="dropdown-menu dropdown-menu-end m-index">
+                                                        <li>
+                                                            <a href="{{ route('subs-radio-manage',['radio_id' => $data->id]) }}" class="dropdown-item edit-radio">
+                                                                <span class="text-success"><i class="fa-regular fa-credit-card me-2"></i>{{ __('Renew') }}</span>
+                                                            </a>
+                                                        </li>
+                                                        <li class="dropdown-divider"></li>
                                                         <li>
                                                             <a href="{{ route('subs-radio-manage',['radio_id' => $data->id]) }}" class="dropdown-item edit-radio">
                                                                 <i class="fa-regular fa-pen-to-square me-2"></i>{{ __('Radio Management') }}

@@ -12,7 +12,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('cleanup:tmp-genre')->everyMinute();
+        $schedule->command('cleanup:tmp-genre')->everyFiveMinute();
+        $schedule->command('generate:statusfile')->everySevenMinutes();
         // $schedule->command('inspire')->hourly();
     }
 

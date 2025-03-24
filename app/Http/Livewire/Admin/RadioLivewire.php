@@ -186,7 +186,7 @@ class RadioLivewire extends Component
         // Build the configuration payload.
         // We hardcode the Icecast port (8000) here.
         $config = [
-            'source_url' => "http://192.168.0.113:8000{$sourceMount}",  // e.g., http://192.168.0.113:8000/source_radio_one1
+            'source_url' => "app('server_ip').':'.app('server_post'){$sourceMount}",  // e.g., http://192.168.0.113:8000/source_radio_one1
             'mount'      => $mountName,  // e.g., /radio_one1
             'bitrate'    => $bitrate,
             'source'     => $radio->source,
@@ -356,7 +356,7 @@ class RadioLivewire extends Component
         $sources = $icecastStatus['icestats']['source'] ?? [];
         
         // 2. Get all radio configurations from the database.
-        $radios = \App\Models\RadioConfiguration::with('radio_configuration_profile', 'plan')->get();
+        $radios = RadioConfiguration::with('radio_configuration_profile', 'plan')->get();
         
         $mergedData = [];
         
@@ -405,10 +405,10 @@ class RadioLivewire extends Component
                 $flattened = [
                     'mount' => $mount,
                     'radio-id' => $radio->id,
-                    'bitrate' => (string)$sourceData['bitrate'],
+                    'bitrate' => (string)$sourceData['bitrate'].'Kbps',
                     'listener_peak' => (int)$sourceData['listener_peak'],
                     'listeners' => (int)$sourceData['listeners'],
-                    'listenurl' => $sourceData['listenurl'],
+                    'listenurl' => (string)env('APP_URL').$mount,
                 ];
             } else {
                 // If no dynamic data, use nulls (or defaults)
@@ -430,7 +430,7 @@ class RadioLivewire extends Component
             'sources' => $mergedData,
         ];
         
-        $outputJson = json_encode($output, JSON_PRETTY_PRINT);
+        $outputJson = json_encode($output, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         
         // 5. Write the output to a file (for example, in the public folder).
         $filePath = public_path('api/v1/stats/mradiofy-status-json.json');

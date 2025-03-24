@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('subscriber_id');
             $table->unsignedBigInteger('plan_id');
-            $table->unsignedBigInteger('genre_id');
             $table->string('radio_name')->unique();
             $table->string('radio_name_slug')->unique();
             $table->string('source')->unique()->nullable();

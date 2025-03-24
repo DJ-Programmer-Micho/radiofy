@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire\Subscriber\Radio;
 
+
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Models\RadioConfiguration;
@@ -20,7 +21,6 @@ class RadioServerLivewire extends Component
     public function mount($radio_id)
     {
         $this->radio_id = $radio_id;
-        
         // Load main configuration record
         $config = RadioConfiguration::find($this->radio_id);
         if ($config) {

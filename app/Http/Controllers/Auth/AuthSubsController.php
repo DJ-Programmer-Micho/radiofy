@@ -11,7 +11,7 @@ class AuthSubsController extends Controller
     public function signIn(){
         return view('subscriber.auth.signin-one');
     }
-
+    
     public function handleSignIn(Request $request){
         // Validate input
         $request->validate([
@@ -28,6 +28,10 @@ class AuthSubsController extends Controller
         return back()->withErrors([
             'email' => 'Invalid email or password 00.',
         ])->withInput();
+    }
+    
+    public function signUp(){
+        return view('subscriber.auth.register.index');
     }
 
     public function signOut(){

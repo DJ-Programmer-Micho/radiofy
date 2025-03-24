@@ -18,4 +18,10 @@ class SubscriberController extends Controller
     public function radioServer(Request $request){
         return view('subscriber.pages.radio-server.index',['radio_id' => $request->radio_id]);
     }
+    public function RadioNewPlan(){
+        return view('subscriber.pages.new-plan.index');
+    }
+    public function RadioMyPlan(){
+        return view('subscriber.pages.my-plan.index');
+    }
 }
