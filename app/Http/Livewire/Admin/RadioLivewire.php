@@ -247,11 +247,11 @@ class RadioLivewire extends Component
         $configs = RadioConfiguration::where('status', 1)->with('plan')->get();
     
         foreach ($configs as $config) {
-            $radioNameSlug = strtolower(str_replace(' ', '_', $config->radio_name));
+            
             // Ingestion mount for this radio.
             $ingestionMount = $dom->createElement('mount');
             $ingestionMount->setAttribute('type', 'normal');
-            $ingestionMountName = $dom->createElement('mount-name', '/source_' . $radioNameSlug);
+            $ingestionMountName = $dom->createElement('mount-name', '/source_' . $config->radio_name_slug);
             $ingestionMount->appendChild($ingestionMountName);
             $ingestionUsername = $dom->createElement('username', $config->source);
             $ingestionMount->appendChild($ingestionUsername);
@@ -265,7 +265,7 @@ class RadioLivewire extends Component
             // Listener mount for this radio.
             $listenerMount = $dom->createElement('mount');
             $listenerMount->setAttribute('type', 'normal');
-            $listenerMountName = $dom->createElement('mount-name', '/' . $radioNameSlug);
+            $listenerMountName = $dom->createElement('mount-name', '/' . $config->radio_name_slug);
             $listenerMount->appendChild($listenerMountName);
             // Use the same source and password as ingestion mount.
             $listenerRadio = $dom->createElement('radio-id', $config->id);
