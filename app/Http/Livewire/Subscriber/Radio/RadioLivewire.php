@@ -157,9 +157,15 @@ class RadioLivewire extends Component
         $radio = RadioConfiguration::find($id);
         if ($radio) {
             $this->sendRadioConfigUpdate($radio);
-            session()->flash('message', "Radio {$radio->radio_name} updated in Python service.");
+            $this->dispatchBrowserEvent('alert', [
+                'type' => 'success',
+                'message' => __('Reloaded')
+            ]);
         } else {
-            session()->flash('message', "Radio not found.");
+            $this->dispatchBrowserEvent('alert', [
+                'type' => 'error',
+                'message' => __('Radio not found.')
+            ]);
         }
     }
 
