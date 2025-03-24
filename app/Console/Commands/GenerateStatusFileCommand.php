@@ -52,7 +52,7 @@ class GenerateStatusFileCommand extends Command
         // 3. Loop over each radio configuration.
         foreach ($radios as $radio) {
             // Generate mount name from radio name, e.g. "Radio One" becomes "/radio_one"
-            $mount = '/' . strtolower(str_replace(' ', '_', $radio->radio_name));
+            $mount = '/' . $radio->radio_name_slug;
 
             // Try to find a matching dynamic source.
             $sourceData = collect($sources)->first(function ($s) use ($mount) {

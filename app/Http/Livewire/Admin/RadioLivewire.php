@@ -174,7 +174,7 @@ class RadioLivewire extends Component
     {
         // Generate listener mount name based on radio name.
         // For example, "Radio One1" becomes "/radio_one1"
-        $mountName = '/' . strtolower(str_replace(' ', '_', $radio->radio_name));
+        $mountName = '/' . $radio->radio_name_slug;
 
         // Construct the ingestion mount URL using a fixed prefix.
         // For each radio, we want an ingestion mount like: "/source_radio_one1"
@@ -363,7 +363,7 @@ class RadioLivewire extends Component
         // 3. Loop over each radio configuration.
         foreach ($radios as $radio) {
             // Generate mount name from radio name, e.g. "Radio One" becomes "/radio_one"
-            $mount = '/' . strtolower(str_replace(' ', '_', $radio->radio_name));
+            $mount = '/' . $radio->radio_name_slug;
             
             // Try to find a matching dynamic source.
             // We'll assume that the listenurl contains the mount.

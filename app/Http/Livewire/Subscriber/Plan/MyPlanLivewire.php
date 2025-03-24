@@ -168,7 +168,7 @@ class MyPlanLivewire extends Component
     {
         // Generate listener mount name based on radio name.
         // For example, "Radio One1" becomes "/radio_one1"
-        $mountName = '/' . strtolower(str_replace(' ', '_', $radio->radio_name));
+        $mountName = '/' . $radio->radio_name_slug;
 
         // Construct the ingestion mount URL using a fixed prefix.
         // For each radio, we want an ingestion mount like: "/source_radio_one1"
@@ -238,11 +238,10 @@ class MyPlanLivewire extends Component
         $configs = RadioConfiguration::where('status', 1)->with('plan')->get();
     
         foreach ($configs as $config) {
-            $radioNameSlug = strtolower(str_replace(' ', '_', $config->radio_name));
             // Ingestion mount for this radio.
             $ingestionMount = $dom->createElement('mount');
             $ingestionMount->setAttribute('type', 'normal');
-            $ingestionMountName = $dom->createElement('mount-name', '/source_' . $radioNameSlug);
+            $ingestionMountName = $dom->createElement('mount-name', '/source_' . $config->radio_name_slug);
             $ingestionMount->appendChild($ingestionMountName);
             $ingestionUsername = $dom->createElement('username', $config->source);
             $ingestionMount->appendChild($ingestionUsername);
@@ -256,7 +255,7 @@ class MyPlanLivewire extends Component
             // Listener mount for this radio.
             $listenerMount = $dom->createElement('mount');
             $listenerMount->setAttribute('type', 'normal');
-            $listenerMountName = $dom->createElement('mount-name', '/' . $radioNameSlug);
+            $listenerMountName = $dom->createElement('mount-name', '/' . $config->radio_name_slug);
             $listenerMount->appendChild($listenerMountName);
             // Use the same source and password as ingestion mount.
             $listenerRadio = $dom->createElement('radio-id', $config->id);
