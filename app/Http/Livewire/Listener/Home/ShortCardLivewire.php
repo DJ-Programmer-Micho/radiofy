@@ -12,7 +12,7 @@ class ShortCardLivewire extends Component
     }
     public function render()
     {
-        return view('listener.pages.home.shortcard', [
+        return view('listener.pages.home.shortCard', [
         ]);
     }
 }
