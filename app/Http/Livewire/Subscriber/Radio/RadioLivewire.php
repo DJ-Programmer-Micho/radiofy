@@ -157,6 +157,7 @@ class RadioLivewire extends Component
         $radio = RadioConfiguration::find($id);
         if ($radio) {
             $this->sendRadioConfigUpdate($radio);
+            $this->restartAllRadios();
             $this->dispatchBrowserEvent('alert', [
                 'type' => 'success',
                 'message' => __('Reloaded')
@@ -225,7 +226,10 @@ class RadioLivewire extends Component
         $dom->preserveWhiteSpace = false;
         $dom->formatOutput = true;
         if (!$dom->load($templatePath)) {
-            session()->flash('xml_update', 'Failed to load XML template.');
+            $this->dispatchBrowserEvent('alert', [
+                'type' => 'error',
+                'message' => __('Faild to update XML')
+            ]);
             return;
         }
     
@@ -298,10 +302,20 @@ class RadioLivewire extends Component
     
         if ($dom->save($xmlFilePath)) {
             session()->flash('xml_update', 'icecast.xml updated successfully.');
+            $this->dispatchBrowserEvent('alert', [
+                'type' => 'success',
+                'message' => __('icecast.xml updated successfully')
+            ]);
             $output = shell_exec('sudo systemctl reload icecast2 2>&1');
-            session()->flash('xml_reload', 'Icecast reloaded: ' . $output);
+            $this->dispatchBrowserEvent('alert', [
+                'type' => 'info',
+                'message' => __('Icecast Reloaded in SERVER ' . $output)
+            ]);
         } else {
-            session()->flash('xml_update', 'Failed to update icecast.xml.');
+            $this->dispatchBrowserEvent('alert', [
+                'type' => 'error',
+                'message' => __('Faild to update the icecast.xml')
+            ]);
         }
     }
     
@@ -320,7 +334,9 @@ class RadioLivewire extends Component
         foreach ($radios as $radio) {
             $this->sendRadioConfigUpdate($radio);
         }
-    
-        session()->flash('message', 'All active radios have been updated.');
+        $this->dispatchBrowserEvent('alert', [
+            'type' => 'success',
+            'message' => __('NAll Active Radios have been updated')
+        ]);
     }
 }
