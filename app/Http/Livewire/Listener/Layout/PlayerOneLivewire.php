@@ -23,7 +23,7 @@ class PlayerOneLivewire extends Component
             'radio_configuration_profile.languages', 
             'genre'
         ])->findOrFail($this->lastRadio);
-        $this->streamUrl = $this->currentRadio->stream_url ?? 'https://usa13.fastcast4u.com/proxy/mradio02?mp=/1';
+        $this->streamUrl = app('server_ip').':'.app('server_post').'/'.$this->currentRadio->radio_name_slug ?? 'https://usa13.fastcast4u.com/proxy/mradio02?mp=/1';
     }
 
 
@@ -36,15 +36,16 @@ class PlayerOneLivewire extends Component
                 'genre'
             ])->findOrFail($radioId);
 
-            Log::info(app('server_ip').':'.app('server_post').'/'.$this->currentRadio->radio_name_slug);
+            // Log::info(app('server_ip').':'.app('server_post').'/'.$this->currentRadio->radio_name_slug);
+            $this->streamUrl = app('server_ip').':'.app('server_post').'/'.$this->currentRadio->radio_name_slug;
 
             // Testing
-            if($radioId == 12){
-                $this->streamUrl = 'https://l3.itworkscdn.net/itwaudio/9006/stream';
-            } else {
-                $this->streamUrl = 'https://usa13.fastcast4u.com/proxy/mradio02?mp=/1';
+            // if($radioId == 12){
+            //     $this->streamUrl = 'https://l3.itworkscdn.net/itwaudio/9006/stream';
+            // } else {
+            //     $this->streamUrl = 'https://usa13.fastcast4u.com/proxy/mradio02?mp=/1';
 
-            }
+            // }
             $this->dispatchBrowserEvent('play-radio', ['streamUrl' => $this->streamUrl]);
             $this->isPlaying = true;
         }
