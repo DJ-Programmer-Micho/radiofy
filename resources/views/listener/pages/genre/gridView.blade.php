@@ -1,7 +1,7 @@
 <div class="page-content">
     @livewire('listener.home.main-ads-livewire')
     <div class="row px-3">
-        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-6">
           <div class="card border-0 text-white"
                style="
                  background-image: url('https://artwork.anghcdn.co/webp/?id=132248377&size=672');
@@ -17,7 +17,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-6">
           <div class="card border-0 text-white"
                style="
                  background-image: url('https://artwork.anghcdn.co/webp/?id=132248552&size=672');
@@ -33,7 +33,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-6">
           <div class="card border-0 text-white"
                style="
                  background-image: url('https://artwork.anghcdn.co/webp/?id=132248640&size=672');
@@ -49,7 +49,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-6">
           <div class="card border-0 text-white"
                style="
                  background-image: url('https://artwork.anghcdn.co/webp/?id=164270520&size=672');
@@ -65,7 +65,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-6">
           <div class="card border-0 text-white"
                style="
                  background-image: url('https://artwork.anghcdn.co/webp/?id=132288909&size=672');
@@ -81,7 +81,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-6">
           <div class="card border-0 text-white"
                style="
                  background-image: url('https://artwork.anghcdn.co/webp/?id=192850982&size=672');
@@ -97,7 +97,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-6">
           <div class="card border-0 text-white"
                style="
                  background-image: url('https://artwork.anghcdn.co/webp/?id=132076054&size=672');
@@ -113,7 +113,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-6">
           <div class="card border-0 text-white"
                style="
                  background-image: url('https://artwork.anghcdn.co/webp/?id=132249168&size=672');
@@ -129,7 +129,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-6">
           <div class="card border-0 text-white"
                style="
                  background-image: url('https://artwork.anghcdn.co/webp/?id=132248377&size=672');
@@ -145,7 +145,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-6">
           <div class="card border-0 text-white"
                style="
                  background-image: url('https://artwork.anghcdn.co/webp/?id=132248552&size=672');
@@ -161,7 +161,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-6">
           <div class="card border-0 text-white"
                style="
                  background-image: url('https://artwork.anghcdn.co/webp/?id=132248640&size=672');
@@ -177,7 +177,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-6">
           <div class="card border-0 text-white"
                style="
                  background-image: url('https://artwork.anghcdn.co/webp/?id=164270520&size=672');
@@ -193,7 +193,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-6">
           <div class="card border-0 text-white"
                style="
                  background-image: url('https://artwork.anghcdn.co/webp/?id=132288909&size=672');
@@ -209,7 +209,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-6">
           <div class="card border-0 text-white"
                style="
                  background-image: url('https://artwork.anghcdn.co/webp/?id=192850982&size=672');
@@ -225,7 +225,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-6">
           <div class="card border-0 text-white"
                style="
                  background-image: url('https://artwork.anghcdn.co/webp/?id=132076054&size=672');
@@ -241,7 +241,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-6">
           <div class="card border-0 text-white"
                style="
                  background-image: url('https://artwork.anghcdn.co/webp/?id=132249168&size=672');
@@ -257,7 +257,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-6">
           <div class="card border-0 text-white"
                style="
                  background-image: url('https://artwork.anghcdn.co/webp/?id=132248377&size=672');
@@ -273,7 +273,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-6">
           <div class="card border-0 text-white"
                style="
                  background-image: url('https://artwork.anghcdn.co/webp/?id=132248552&size=672');
@@ -289,7 +289,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-6">
           <div class="card border-0 text-white"
                style="
                  background-image: url('https://artwork.anghcdn.co/webp/?id=132248640&size=672');
@@ -305,7 +305,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-6">
           <div class="card border-0 text-white"
                style="
                  background-image: url('https://artwork.anghcdn.co/webp/?id=164270520&size=672');
@@ -321,7 +321,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-6">
           <div class="card border-0 text-white"
                style="
                  background-image: url('https://artwork.anghcdn.co/webp/?id=132288909&size=672');
@@ -337,7 +337,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-6">
           <div class="card border-0 text-white"
                style="
                  background-image: url('https://artwork.anghcdn.co/webp/?id=192850982&size=672');
@@ -353,7 +353,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-6">
           <div class="card border-0 text-white"
                style="
                  background-image: url('https://artwork.anghcdn.co/webp/?id=132076054&size=672');
@@ -369,7 +369,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-6">
           <div class="card border-0 text-white"
                style="
                  background-image: url('https://artwork.anghcdn.co/webp/?id=132249168&size=672');
