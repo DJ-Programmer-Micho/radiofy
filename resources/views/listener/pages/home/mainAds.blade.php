@@ -1,4 +1,4 @@
-<div class="px-3 pb-3">
+<div class="pb-3">
     <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner">
           <div class="carousel-item active">

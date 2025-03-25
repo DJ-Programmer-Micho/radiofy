@@ -1,6 +1,15 @@
 <div class="page-content">
+    <style>
+        .row {
+            --vz-gutter-x: 0.5rem;
+            --vz-gutter-y: 0rem;
+        }
+        .card {
+            margin-bottom: 0.5rem;
+        }
+    </style>
     @livewire('listener.home.main-ads-livewire')
-    <div class="row px-3">
+    <div class="row">
         <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-6">
           <div class="card border-0 text-white"
                style="
