@@ -158,6 +158,7 @@ class RadioLivewire extends Component
         if ($radio) {
             $this->sendRadioConfigUpdate($radio);
             $this->restartAllRadios();
+            $this->restartPythonTranscoder();
             $this->dispatchBrowserEvent('alert', [
                 'type' => 'success',
                 'message' => __('Reloaded')
@@ -318,6 +319,27 @@ class RadioLivewire extends Component
         }
     }
     
+    public function restartPythonTranscoder()
+    {
+        try {
+            // Execute the command and capture the output.
+            $output = shell_exec('sudo supervisorctl restart python_transcoder 2>&1');
+            
+            // Dispatch a success event with the output from the command.
+            $this->dispatchBrowserEvent('alert', [
+                'type'    => 'success',
+                'message' => __('Python Transcoder restarted successfully. Output: ' . $output)
+            ]);
+        } catch (\Exception $e) {
+            // Log the error and dispatch an error event.
+            Log::error("Failed to restart Python Transcoder: " . $e->getMessage());
+            $this->dispatchBrowserEvent('alert', [
+                'type'    => 'error',
+                'message' => __('Failed to restart Python Transcoder.')
+            ]);
+        }
+    }
+
     public function changeTab($status)
     {
         $this->statusFilter = $status;

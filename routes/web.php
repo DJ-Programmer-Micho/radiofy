@@ -134,6 +134,7 @@ Route::prefix('reg-201')->middleware(['subs.auth.check'])->group(function () {
 // Listener Routes
 // Route::prefix('listener')->group(function () {
     Route::get('/', [ListenerController::class, 'home'])->name('listener.home');
+    Route::get('/genres', [ListenerController::class, 'genre'])->name('listener.genre');
     Route::get('/radio/{radio}', [ListenerController::class, 'radioView'])->name('listener.radio');
 Route::middleware(['lis.auth.check'])->group(function () {
 });

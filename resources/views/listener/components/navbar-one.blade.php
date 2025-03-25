@@ -50,6 +50,21 @@
                         </a>
                     </li>
                 </ul>
+                <ul class="nav">
+                    <li class="nav-item">
+                        <a wire:navigate href="{{ route('listener.genre') }}" class="nav-link menu-link" data-key="l-home">
+                            <lord-icon
+                            src="https://cdn.lordicon.com/jectmwqf.json"
+                            trigger="loop"
+                            delay="2000"
+                            state="hover-squeeze"
+                            colors="primary:#e4e4e4,secondary:#cc0022"
+                            style="width:32px;height:32px">
+                            </lord-icon>
+                            <span class="ml-2">{{__('Genre')}}</span>
+                        </a>
+                    </li>
+                </ul>
                 {{-- <li class="nav-item">
                     
                     <a class="nav-link menu-link" href="#sidebarDashboards" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarDashboards">

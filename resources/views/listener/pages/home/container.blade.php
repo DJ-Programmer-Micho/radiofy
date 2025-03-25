@@ -23,6 +23,5 @@
 @livewire('listener.home.discover-radio-livewire')
 @livewire('listener.home.followed-radio-livewire')
 @livewire('listener.home.liked-radio-livewire')
-<h1>HI Listener</h1>
 <!-- container-fluid -->
 </div>
