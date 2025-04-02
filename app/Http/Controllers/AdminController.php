@@ -9,7 +9,6 @@ class AdminController extends Controller
     public function dashboard(){
         return view('admin.pages.dashboard.index');
     }
-
     public function radioAdjustments(){
         return view('admin.pages.radio.index');
     }
@@ -21,5 +20,11 @@ class AdminController extends Controller
     }
     public function radioPlan(){
         return view('admin.pages.plan.index');
+    }
+    public function radioVerify(){
+        return view('admin.pages.verify.index');
+    }
+    public function radioPromotion(){
+        return view('admin.pages.promotion.index');
     }
 }

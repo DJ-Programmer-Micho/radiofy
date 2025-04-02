@@ -10,6 +10,8 @@ return new class extends Migration {
             $table->id();
             $table->string('code')->unique(); //'en'
             $table->string('name');           //'English'
+            $table->string('image');           //'English'
+            $table->string('image_sq');           //'English'
             $table->integer('priority');      //'1'
             $table->unsignedInteger('status');//'1'
             $table->timestamps();

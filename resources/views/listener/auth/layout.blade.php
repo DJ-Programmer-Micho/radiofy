@@ -4,24 +4,38 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="csrf-token" content="{{csrf_token()}}">
-        {{-- <link rel="stylesheet" href="{{asset('main/assets/vendor/line-awesome/line-awesome/line-awesome/css/line-awesome.min.css')}}"> --}}
-        <!--Swiper slider css-->
+        <meta name="turbo-cache-control" content="no-cache">
+        <meta name="HandheldFriendly" content="True"/>
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="publisher" content="Michel Shabo">
+        <meta name="theme-color" content="#cc0022">
+        <meta name="mobile-web-app-title" content="Mradiofy">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-title" content="Mradiofy">
+        <meta name="apple-mobile-web-app-status-bar-style" content="#cc0022">
+        <meta name='identifier-URL' content='{{url()->current()}}'>
+        <meta name="author" content="Shabo Shabo">
+        <meta name="copyright" content="Mradiofy">
+        <meta name="page-topic" content="online-radio-station">
+        <meta name="page-type" content="website">
+        <meta name="audience" content="Everyone">
+        <meta name="robots" content="index, follow"> 
         <link href="{{asset('dashboard/libs/swiper/swiper-bundle.min.css')}}" rel="stylesheet" type="text/css" />
-        <!-- Layout config Js -->
         <script src="{{asset('dashboard/js/layout.js')}}"></script>
-        <!-- Bootstrap Css -->
         <link href="{{asset('dashboard/css/bootstrap.min.css')}}" rel="stylesheet" type="text/css" />
-        <!-- Icons Css -->
         <link href="{{asset('dashboard/css/icons.min.css')}}" rel="stylesheet" type="text/css" />
-        <!-- App Css-->
         <link href="{{asset('dashboard/css/app.min.css')}}" rel="stylesheet" type="text/css" />
-        <!-- custom Css-->
         <link href="{{asset('dashboard/css/custom.min.css')}}" rel="stylesheet" type="text/css" />
         <link href="{{asset('dashboard/css/signup-form-wizard.css')}}" rel="stylesheet" type="text/css" />
-
+        <link rel="shortcut icon" href="{{app('app-icon')}}">
+        <link rel="apple-touch-icon-precomposed" sizes="144x144" href="{{app('app-icon')}}">
+        <link rel="apple-touch-icon-precomposed" sizes="114x114" href="{{app('app-icon')}}">
+        <link rel="apple-touch-icon-precomposed" sizes="72x72" href="{{app('app-icon')}}">
+        <link rel="apple-touch-icon-precomposed" sizes="57x57" href="{{app('app-icon')}}">
+        <link rel="apple-touch-icon-precomposed" href="{{app('app-icon')}}">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/js/all.min.js" integrity="sha512-6sSYJqDreZRZGkJ3b+YfdhB3MzmuP9R7X1QZ6g5aIXhRvR1Y/N/P47jmnkENm7YL3oqsmI6AK+V6AD99uWDnIw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <link href="{{asset('dashboard/css/toaster.css')}}" rel="stylesheet" type="text/css">
-        <title>{{ $title ?? 'Admin Panel Sign In' }}</title>
+        <title>Account | M Radiofy</title>
         <style>
             .ar-shift {
                 direction: rtl;
@@ -34,8 +48,8 @@
                 z-index: 1;
             }
             .auth-one-bg .bg-overlay {
-                background: -webkit-gradient(linear, left top, right top, from(#00cc00), to(#00cc00));
-                background: linear-gradient(to right, #00cc00, #00cc00);
+                background: -webkit-gradient(linear, left top, right top, from(#00cc00), to(#00becc));
+                background: linear-gradient(to right, #00cc00, #00becc);
                 opacity: .6;
             }
             .card{
@@ -78,6 +92,8 @@
     <script src="{{asset('dashboard/js/pages/particles.app.js')}}"></script>
     <!-- password-addon init -->
     <script src="{{asset('dashboard/js/pages/password-addon.init.js')}}"></script>
+    <script src="{{asset('dashboard/js/pages/passowrd-create.init.js')}}"></script>
+    
     <script src="{{asset('dashboard/js/pages/form-wizard.init.js')}}"></script>
     {{-- <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script> --}}
 

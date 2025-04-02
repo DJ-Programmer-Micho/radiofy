@@ -11,7 +11,8 @@ class RadioSubscription extends Model
 
     protected $fillable = [
         'subscriber_id',
-        'radio_configuration_id',
+        'radioable_id',   // The ID for either the internal or external radio record
+        'radioable_type', // The class name (e.g., App\Models\RadioConfiguration or App\Models\ExternalRadioConfiguration)
         'plan_id',
         'payment_frequency',
         'subscribed_date',
@@ -24,9 +25,10 @@ class RadioSubscription extends Model
         return $this->belongsTo(Subscriber::class);
     }
 
-    public function radioConfiguration()
+    // Polymorphic relationship: radioable can be either an internal or external radio.
+    public function radioable()
     {
-        return $this->belongsTo(RadioConfiguration::class, 'radio_configuration_id');
+        return $this->morphTo();
     }
 
     public function plan()

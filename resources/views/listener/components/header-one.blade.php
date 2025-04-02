@@ -2,24 +2,23 @@
     <div class="layout-width">
     <div class="navbar-header">
         <div class="d-flex">
-            <audio id="notificationSound" src="{{ asset('dashboard/audio/notification.mp3') }}" preload="auto" allow="autoplay"></audio>
             <!-- LOGO -->
             <div class="navbar-brand-box horizontal-logo">
                 <a href="index.html" class="logo logo-dark">
                     <span class="logo-sm">
-                        {{-- <img src="{{ app('negative_logo') }}" alt="Akito" height="27"> --}}
+                        <img src="{{app('app-icon')}}" alt="Mradiofy" height="32">
                     </span>
                     <span class="logo-lg">
-                        {{-- <img src="{{ app('negative_logo') }}" alt="Akito" height="42"> --}}
+                        <img src="{{ app('app-icon-width') }}" alt="Mradiofy" height="64">
                     </span>
                 </a>
                 <!-- Light Logo-->
                 <a href="index.html" class="logo logo-light">
                     <span class="logo-sm">
-                        {{-- <img src="{{ app('negative_logo') }}" alt="Akito" height="27"> --}}
+                        <img src="{{app('app-icon')}}" alt="Mradiofy" height="32">
                     </span>
                     <span class="logo-lg">
-                        {{-- <img src="{{ app('negative_logo') }}" alt="Akito" height="42"> --}}
+                        <img src="{{ app('app-icon-width') }}" alt="Mradiofy" height="64">
                     </span>
                 </a>
             </div>
@@ -151,19 +150,19 @@
                     @endforeach
                 </div>
             </div>
-
+            @if (auth()->guard('listener')->check())
             <div class="ms-1 header-item d-none d-sm-flex">
                 <button type="button" class="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle" data-toggle="fullscreen">
                     <i class='bx bx-fullscreen fs-22'></i>
                 </button>
             </div>
-
+            @endif
             <div class="ms-1 header-item d-none d-sm-flex">
                 <button type="button" class="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle light-dark-mode">
                     <i class='bx bx-moon fs-22'></i>
                 </button>
             </div>
-            
+            @if (auth()->guard('listener')->check())
             <div class="dropdown topbar-head-dropdown ms-1 header-item" id="notificationDropdown">
                 <button type="button" class="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle" id="page-header-notifications-dropdown" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-haspopup="true" aria-expanded="false">
                     <i class='bx bx-bell fs-22'></i>
@@ -312,6 +311,7 @@
                     </div>
                 </div>
             </div>
+            @endif
             <div class="dropdown ms-sm-3 header-item topbar-user">
                 @if (auth()->guard('listener')->check())
                 <button type="button" class="btn" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -326,7 +326,7 @@
                 <div class="dropdown-menu dropdown-menu-end">
                     <!-- item-->
                     <h6 class="dropdown-header">{{__('Welcome')}} {{auth()->guard('listener')->user()->listener_profile->first_name}}</h6>
-                    {{-- <a class="dropdown-item" href="{{ route('super.profile',['locale' => app()->getLocale()]) }}"><i class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span class="align-middle">{{__('Profile')}}</span></a> --}}
+                    <a wire:navigate class="dropdown-item" href="{{  route("listener.profile") }}"><i class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span class="align-middle">{{__('Profile')}}</span></a>
                     {{-- <a class="dropdown-item" href="apps-chat.html"><i class="mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Messages</span></a>
                     <a class="dropdown-item" href="apps-tasks-kanban.html"><i class="mdi mdi-calendar-check-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Taskboard</span></a>
                     <a class="dropdown-item" href="pages-faqs.html"><i class="mdi mdi-lifebuoy text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Help</span></a> --}}
@@ -338,14 +338,35 @@
                     <a class="dropdown-item" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i class="mdi mdi-logout text-danger fs-16 align-middle me-1"></i> <span class="align-middle text-danger" data-key="t-logout">{{__('Logout')}}</span></a>
                 </div>
                 @else
-                <button type="button" class="btn" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <div style="background-color:#292e32">
+                <a wire:navigate href="{{  route("lis.signin") }}" type="button" class="btn btn-success p-1" id="page-header-user-dropdown">
                     <span class="d-flex align-items-center">
-                        Login
+                        <span class="d-none d-sm-block">Login</span>
+                        <lord-icon
+                        src="https://cdn.lordicon.com/ozlkyfxg.json"
+                        trigger="loop"
+                        delay="2000"
+                        colors="primary:#e4e4e4,secondary:#cc0022"
+                        style="width:32px;height:32px">
+                    </lord-icon>
+                    </span>
+                </a>
+                <a wire:navigate href="{{  route("subs.signup") }}" type="button" class="btn btn-primary p-1" id="page-header-user-dropdown">
+                    <span class="d-flex align-items-center">
+                        <span class="d-none d-sm-block">Build Your Radio</span>
+                        <lord-icon
+                            src="https://cdn.lordicon.com/mhridhuu.json"
+                            trigger="loop"
+                            delay="2000"
+                            colors="primary:#e4e4e4,secondary:#cc0022"
+                            style="width:32px;height:32px">
+                        </lord-icon>
                         <span class="text-start ms-xl-2">
 
                         </span>
                     </span>
-                </button>
+                </a>
+            </div>
                 @endif
 
             </div>

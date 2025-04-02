@@ -13,7 +13,6 @@ class AuthSubsController extends Controller
     }
     
     public function handleSignIn(Request $request){
-        // Validate input
         $request->validate([
             'email' => 'required|email',
             'password' => 'required|string|min:6',
@@ -34,8 +33,17 @@ class AuthSubsController extends Controller
         return view('subscriber.auth.register.index');
     }
 
+    public function forgetPassword()
+    {
+        return view('subscriber.auth.forget.index'); 
+    }
+    public function newPassword()
+    {
+        return view('subscriber.auth.password.index'); 
+    }
+
     public function signOut(){
         Auth::guard('subscriber')->logout(); // Log out the user
-        return redirect()->to('/auth-logout');
+        return redirect()->route('listener.home');
     }
 }

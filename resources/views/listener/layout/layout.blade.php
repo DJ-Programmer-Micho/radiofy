@@ -84,8 +84,128 @@
             {{-- <x-listener.components.player-one /> --}}
             {{-- <x-listener.components.footer-one /> --}}
             {{-- @livewire('listener.layout.player-one-livewire',['last_radio' => 12]) --}}
+
+
+
+            <hr>
+            <footer class="custom-footer py-5 position-relative" style="margin-bottom: 150px">
+                <div class="container">
+                    <div class="row">
+  
+                        <div class="col-lg-12 ms-lg-auto">
+                            <div class="row">
+                                <div class="col-sm-3 mt-4">
+                                    <h5 class="text-white mb-0">Company</h5>
+                                    <div class="text-muted mt-3">
+                                        <ul class="list-unstyled ff-secondary footer-list fs-14">
+                                            <li><a href="pages-profile.html">About Us</a></li>
+                                            <li><a href="pages-gallery.html">Jobs</a></li>
+                                            <li><a href="apps-projects-overview.html">For The Record</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3 mt-4">
+                                    <h5 class="text-white mb-0">Communities</h5>
+                                    <div class="text-muted mt-3">
+                                        <ul class="list-unstyled ff-secondary footer-list fs-14">
+                                            <li><a href="pages-profile.html">For Radio Owner</a></li>
+                                            <li><a href="pages-gallery.html">For Listeners</a></li>
+                                            <li><a href="apps-projects-overview.html">Advertising</a></li>
+                                            <li><a href="pages-timeline.html">Investors</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3 mt-4">
+                                    <h5 class="text-white mb-0">Useful links</h5>
+                                    <div class="text-muted">
+                                        <ul class="list-unstyled ff-secondary footer-list fs-14">
+                                            <li><a href="pages-pricing.html"></a></li>
+                                            <li><a href="apps-mailbox.html">Terms and Condition</a></li>
+                                            <li><a href="apps-mailbox.html">Privacy Policy</a></li>
+                                            <li><a href="apps-mailbox.html">Legal</a></li>
+                                            <li><a href="apps-mailbox.html">Cookies</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3 mt-4">
+                                    <h5 class="text-white mb-0">Info</h5>
+                                    <div class="text-muted mt-3">
+                                        <ul class="list-unstyled ff-secondary footer-list fs-14">
+                                            <li><a href="pages-faqs.html">Support</a></li>
+                                            <li><a href="pages-faqs.html">Contact</a></li>
+                                            <li><a href="pages-faqs.html">FAQ</a></li>
+                                            <li><a href="pages-faqs.html">Stats</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+    
+                    </div>
+    
+                    <div class="row text-center text-sm-start align-items-center mt-5">
+                        <div class="col-sm-6">
+    
+                            <div>
+                                <p class="copy-rights mb-0">
+                                    <script>
+                                        
+                                    </script>2025 © M Radiofy - MET IRAQ
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="text-sm-end mt-3 mt-sm-0">
+                                <ul class="list-inline mb-0 footer-social-link">
+                                    <li class="list-inline-item">
+                                        <a href="javascript: void(0);" class="avatar-xs d-block">
+                                            <div class="avatar-title rounded-circle">
+                                                <i class="ri-facebook-fill"></i>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li class="list-inline-item">
+                                        <a href="javascript: void(0);" class="avatar-xs d-block">
+                                            <div class="avatar-title rounded-circle">
+                                                <i class="ri-github-fill"></i>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li class="list-inline-item">
+                                        <a href="javascript: void(0);" class="avatar-xs d-block">
+                                            <div class="avatar-title rounded-circle">
+                                                <i class="ri-linkedin-fill"></i>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li class="list-inline-item">
+                                        <a href="javascript: void(0);" class="avatar-xs d-block">
+                                            <div class="avatar-title rounded-circle">
+                                                <i class="ri-google-fill"></i>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li class="list-inline-item">
+                                        <a href="javascript: void(0);" class="avatar-xs d-block">
+                                            <div class="avatar-title rounded-circle">
+                                                <i class="ri-dribbble-line"></i>
+                                            </div>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+
+
+
+
+
+
             <div id="persistent-player" data-turbo-permanent>
-                @livewire('listener.layout.player-one-livewire', ['last_radio' => 12])
+                @livewire('listener.layout.player-one-livewire')
             </div>
         </div>
     <!-- JAVASCRIPT -->
@@ -180,18 +300,76 @@
             }
         });
     </script>
+    <script src="{{asset('dashboard/js/lordicon.js')}}"></script>
+    
+    <form id="languageForm" action="{{ route('setLocale') }}" method="post">
+        @csrf
+        <input type="hidden" name="locale" id="selectedLocale" value="{{ app()->getLocale() }}">
+    </form>
 
+<script>
+    window.addEventListener('auto-play-radio', event => {
+        alert('Auto-playing radio with stream URL: ' + event.detail.streamUrl);
+        // Here, you could call your audio player code, for example:
+        // audioPlayer.play(event.detail.streamUrl);
+    });
+</script>
 
-{{-- 
-<form id="languageForm" action="{{ route('setLocale') }}" method="post">
-    @csrf
-    <input type="hidden" name="locale" id="selectedLocale" value="{{ app()->getLocale() }}">
-</form> --}}
-<script src="{{asset('dashboard/js/lordicon.js')}}"></script>
+<script>
+    if (!window.turboAudioSwitchInitialized) {
+        window.turboAudioSwitchInitialized = true;
+
+        window.addEventListener('switch-radio', event => {
+            const radioId = event.detail.radioId;
+            const radioType = event.detail.radioType;
+            const sponser = event.detail.sponser ?? null;
+            const campaignId = event.detail.campaignId ?? null;
+            console.log(
+                radioId,
+                radioType,
+                sponser,
+                campaignId
+            )
+            if(sponser){
+                Livewire.emit('incrementCampaignClick', campaignId);
+            }
+            Livewire.emit('playNowEvent', radioId, radioType);
+        });
+    }
+</script>
 @livewireScripts
+<script>
+// document.addEventListener("turbo:render", () => {
+//     Livewire.restart();
+// });
+// document.addEventListener("turbo:load", () => {
+//     Livewire.hook('component.initialized', (component) => {
+//     });
+// });
+document.addEventListener("turbo:before-render", function(event) {
+    event.preventDefault();
+    if (window.Livewire) {
+        Livewire.stop();
+    }
+    setTimeout(() => event.detail.resume(), 50);
+});
+
+document.addEventListener("turbo:render", function() {
+    if (window.Livewire) {
+        Livewire.start();
+    }
+});
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        Livewire.emit('updateLimit', window.innerWidth);
+    });
+</script>
+
+
 @stack('radio_script')
-    @stack('teamDelivery')
-    @stack('dashScript')
+@stack('teamDelivery')
+@stack('dashScript')
 
 </body>
 </html>

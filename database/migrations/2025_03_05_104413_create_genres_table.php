@@ -16,6 +16,7 @@ return new class extends Migration
             $table->integer('priority');
             $table->unsignedInteger('status');
             $table->string('image')->nullable();
+            $table->string('image_sq')->nullable();
             $table->timestamps();
         });
     }

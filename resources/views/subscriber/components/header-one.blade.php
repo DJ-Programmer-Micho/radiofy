@@ -7,19 +7,19 @@
             <div class="navbar-brand-box horizontal-logo">
                 <a href="index.html" class="logo logo-dark">
                     <span class="logo-sm">
-                        {{-- <img src="{{ app('negative_logo') }}" alt="Akito" height="27"> --}}
+                        <img src="{{app('app-icon')}}" alt="Mradiofy" height="32">
                     </span>
                     <span class="logo-lg">
-                        {{-- <img src="{{ app('negative_logo') }}" alt="Akito" height="42"> --}}
+                        <img src="{{ app('app-icon-width') }}" alt="Mradiofy" height="64">
                     </span>
                 </a>
                 <!-- Light Logo-->
                 <a href="index.html" class="logo logo-light">
                     <span class="logo-sm">
-                        {{-- <img src="{{ app('negative_logo') }}" alt="Akito" height="27"> --}}
+                        <img src="{{app('app-icon')}}" alt="Mradiofy" height="32">
                     </span>
                     <span class="logo-lg">
-                        {{-- <img src="{{ app('negative_logo') }}" alt="Akito" height="42"> --}}
+                        <img src="{{ app('app-icon-width') }}" alt="Mradiofy" height="64">
                     </span>
                 </a>
             </div>
@@ -348,7 +348,7 @@
                     <div class="dropdown-menu dropdown-menu-end">
                         <!-- item-->
                         <h6 class="dropdown-header">{{__('Welcome')}} {{auth()->guard('subscriber')->user()->subscriber_profile->first_name}}</h6>
-                        {{-- <a class="dropdown-item" href="{{ route('super.profile',['locale' => app()->getLocale()]) }}"><i class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span class="align-middle">{{__('Profile')}}</span></a> --}}
+                        <a wire:navigate class="dropdown-item" href="{{  route("subscriber.profile") }}"><i class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span class="align-middle">{{__('Profile')}}</span></a>
                         {{-- <a class="dropdown-item" href="apps-chat.html"><i class="mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Messages</span></a>
                         <a class="dropdown-item" href="apps-tasks-kanban.html"><i class="mdi mdi-calendar-check-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Taskboard</span></a>
                         <a class="dropdown-item" href="pages-faqs.html"><i class="mdi mdi-lifebuoy text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Help</span></a> --}}

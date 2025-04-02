@@ -62,13 +62,16 @@
     <script src="{{asset('dashboard/libs/simplebar/simplebar.min.js')}}"></script>
     <script src="{{asset('dashboard/libs/node-waves/waves.min.js')}}"></script>
     <script src="{{asset('dashboard/libs/feather-icons/feather.min.js')}}"></script>
-    <script src="{{asset('dashboard/js/pages/plugins/lord-icon-2.1.0.js')}}"></script>
+    {{-- <script src="{{asset('dashboard/js/pages/plugins/lord-icon-2.1.0.js')}}"></script> --}}
     <script src="{{asset('dashboard/js/plugins.js')}}"></script>
     <script src="{{asset('dashboard/js/jquery.min.js')}}"></script>
     <!-- apexcharts -->
-    <script src="{{asset('dashboard/libs/apexcharts/apexcharts.min.js')}}"></script>
+    {{-- <script src="{{asset('dashboard/libs/apexcharts/apexcharts.min.js')}}"></script> --}}
     <!-- Vector map-->
     <script src="{{asset('dashboard/libs/jsvectormap/js/jsvectormap.min.js')}}"></script>
+    
+    <script src="{{asset('dashboard/libs/chart.js/chart.umd.js')}}"></script>
+    <script src="{{asset('dashboard/js/pages/chartjs.init.js')}}"></script>
     <script src="{{asset('dashboard/libs/jsvectormap/maps/world-merc.js')}}"></script>
     <!--Swiper slider js-->
     <script src="{{asset('dashboard/libs/swiper/swiper-bundle.min.js')}}"></script>
@@ -83,22 +86,22 @@
     @stack('scripts')
     @stack('subscriber_script')
   
-
+    <script src="{{asset('dashboard/js/lordicon.js')}}"></script>
     
-    {{-- <form id="logout-form" action="{{ route('super.signout') }}" method="POST" style="display: none;">
+    <form id="logout-form" action="{{ route('subs.logout.post') }}" method="POST" style="display: none;">
         @csrf
     </form>
-    <form id="languageForm" action="{{ route('setLocale') }}" method="post">
+    {{-- <form id="languageForm" action="{{ route('setLocale') }}" method="post">
         @csrf
         <input type="hidden" name="locale" id="selectedLocale" value="{{ app()->getLocale() }}">
     </form> --}}
     
-    <script>
+    {{-- <script>
         function changeLanguage(locale) {
             document.getElementById('selectedLocale').value = locale;
             document.getElementById('languageForm').submit();
         }
-    </script>
+    </script> --}}
     
     <script>
         window.addEventListener('alert', event => { 

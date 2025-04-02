@@ -107,7 +107,7 @@
                         </div>
                         <div class="mb-4 text-center">
                             <p class="mb-0">
-                                <a href="{{ route('lis.signin') }}" class="fw-semibold text-primary text-decoration-underline">Signin</a>
+                                <a href="{{ route('subs.signin') }}" class="fw-semibold text-primary text-decoration-underline">Signin</a>
                             </p>
                         </div>
                     </div>

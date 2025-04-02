@@ -12,13 +12,20 @@ class Language extends Model
     protected $fillable = [
         'code',
         'name',
+        'image',
+        'image_sq',
         'priority',
         'status',
     ];
 
-    public function radioConfigurationProfiles()
+    public function internalRadios()
     {
-        return $this->belongsToMany(RadioConfigurationProfile::class, 'radio_profile_language', 'language_id', 'radio_configuration_profile_id')
-                    ->withTimestamps();
+        return $this->morphedByMany(RadioConfiguration::class, 'languageable');
     }
+
+    public function externalRadios()
+    {
+        return $this->morphedByMany(ExternalRadioConfiguration::class, 'languageable');
+    }
+
 }

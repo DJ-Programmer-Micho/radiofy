@@ -8,6 +8,7 @@ use GuzzleHttp\Client;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class RadioLivewire extends Component
 {
@@ -19,18 +20,15 @@ class RadioLivewire extends Component
     // Form fields
     public $radioId;
     public $radioName;
-    public $location;
+    public $location; // (if needed; location might later be part of the profile)
     public $source;
     public $sourcePassword;
-    public $genre;
-    public $fallbackMount;
     public $selectedPlanId;
     public $status;
     public $plans = [];
-
     public $now;
 
-    // Render / search parameters
+    // Render/search parameters
     public $search = '';
     public $statusFilter = 'all';
     public $page = 1;
@@ -38,7 +36,7 @@ class RadioLivewire extends Component
     public $nonActiveCount = 0;
     
     public function mount(){
-        $this->now = \Carbon\Carbon::now();
+        $this->now = Carbon::now();
         $this->status = 1;
         $this->statusFilter = request()->query('statusFilter', 'all');
         $this->page = request()->query('page', 1);
@@ -51,8 +49,7 @@ class RadioLivewire extends Component
             'radioName'      => 'required|string|max:255',
             'location'       => 'nullable|string|max:255',
             'source'         => 'nullable|string|max:255',
-            'source_Password'=> 'nullable|string|max:255',
-            'genre'          => 'required|string',
+            'sourcePassword' => 'nullable|string|max:255',
             'selectedPlanId' => 'required|exists:plans,id',
         ];
     }
@@ -61,14 +58,15 @@ class RadioLivewire extends Component
     {
         $this->validate();
         
+        $radioNameSlug = Str::slug($this->radioName, '-', '');
         $radio = RadioConfiguration::create([
-            'subscriber_id'    => 1,
-            'radio_name'       => $this->radioName,
-            'location'         => $this->location,
-            'source'           => $this->source."@mradiofy",
-            'source_Password'  => $this->sourcePassword,
-            'genre'            => $this->genre,
-            'plan_id'          => $this->selectedPlanId,
+            'subscriber_id'   => 1, // Replace with Auth::id() as needed
+            'radio_name'      => $this->radioName,
+            'radio_name_slug' => $radioNameSlug,
+            'source'          => $this->source . "@mradiofy",
+            'source_password' => $this->sourcePassword,
+            'plan_id'         => $this->selectedPlanId,
+            'status'          => 1,
         ]);
         
         // Immediately send configuration update to the Python service.
@@ -83,10 +81,8 @@ class RadioLivewire extends Component
         $radio = RadioConfiguration::findOrFail($id);
         $this->radioId        = $radio->id;
         $this->radioName      = $radio->radio_name;
-        $this->location       = $radio->location;
         $this->source         = $radio->source;
         $this->sourcePassword = $radio->source_password;
-        $this->genre          = $radio->genre;
         $this->selectedPlanId = $radio->plan_id;
     }
     
@@ -96,15 +92,15 @@ class RadioLivewire extends Component
         
         if ($this->radioId) {
             $radio = RadioConfiguration::findOrFail($this->radioId);
+            $radioNameSlug = Str::slug($this->radioName, '-', '');
             $radio->update([
-                'radio_name'       => $this->radioName,
-                'location'         => $this->location,
-                'genre'            => $this->genre,
-                'source'           => $this->source,
-                'source_Password'  => $this->sourcePassword,
-                'plan_id'          => $this->selectedPlanId,
+                'radio_name'      => $this->radioName,
+                'radio_name_slug' => $radioNameSlug,
+                'source'          => $this->source,
+                'source_password' => $this->sourcePassword,
+                'plan_id'         => $this->selectedPlanId,
             ]);
-            // Update Python transcoding service with new configuration.
+            // Update Python service with new configuration.
             $this->sendRadioConfigUpdate($radio);
     
             session()->flash('message', 'Radio updated successfully.');
@@ -124,7 +120,6 @@ class RadioLivewire extends Component
         $this->location       = null;
         $this->source         = null;
         $this->sourcePassword = null;
-        $this->genre          = null;
         $this->selectedPlanId = null;
     }
     
@@ -171,33 +166,47 @@ class RadioLivewire extends Component
         }
     }
 
-    // Send updated configuration to the Python transcoding service.
+    public $deleteRadioId;
+    public $radioNameToDelete = '';
+
+    public function confirmDeleteRadio($id)
+    {
+        $this->deleteRadioId = $id;
+        $this->radioNameToDelete = '';
+    }
+
+    public function removeRadio()
+    {
+        if ($this->radioNameToDelete !== 'DELETE RADIO') {
+            // Optionally, add a flash message or error
+            return;
+        }
+
+        if ($this->deleteRadioId) {
+            $radio = RadioConfiguration::findOrFail($this->deleteRadioId);
+            $radio->delete();
+            $this->dispatchBrowserEvent('alert', [
+                'type' => 'success',
+                'message' => __('External Radio Deleted Successfully.')
+            ]);
+            $this->resetInputFields();
+        }
+    }
+    // Send configuration update to Python transcoding service.
     protected function sendRadioConfigUpdate($radio)
     {
-        // Generate listener mount name based on radio name.
-        // For example, "Radio One1" becomes "/radio_one1"
         $mountName = '/' . $radio->radio_name_slug;
-
-        // Construct the ingestion mount URL using a fixed prefix.
-        // For each radio, we want an ingestion mount like: "/source_radio_one1"
         $sourceMount = '/source_' . ltrim($mountName, '/');
-        
-        // Use the bitrate from the associated plan; default to 64 if not set.
         $bitrate = ($radio->plan && $radio->plan->bitrate) ? $radio->plan->bitrate : 64;
-        
-        // Build the configuration payload.
-        // We hardcode the Icecast port (8000) here.
         $config = [
-            'source_url' => "http://192.168.0.113:8000{$sourceMount}",  // e.g., http://192.168.0.113:8000/source_my-radio
-            'mount'      => $mountName,  // e.g., /my-radio
-            'bitrate'    => $bitrate, // e.g., /128
-            'source'     => $radio->source, // e.g., /radio5@mradiofy
-            'password'   => $radio->source_password, // e.g., /123456789
+            'source_url' => "http://192.168.0.113:8000{$sourceMount}",
+            'mount'      => $mountName,
+            'bitrate'    => $bitrate,
+            'source'     => $radio->source,
+            'password'   => $radio->source_password,
             'host'       => '192.168.0.113',
             'port'       => 8000,
         ];
-        
-        // Define the Python service URL.
         $pythonServiceUrl = 'http://192.168.0.113:5000/update_radio_config';
 
         try {
@@ -218,7 +227,6 @@ class RadioLivewire extends Component
         }
     }
     
-    // Legacy XML update for Icecast (optional if using dynamic Python updates)
     public function updateIcecastXml()
     {
         $templatePath = resource_path('xml/icecast-template.xml');
@@ -229,13 +237,12 @@ class RadioLivewire extends Component
         if (!$dom->load($templatePath)) {
             $this->dispatchBrowserEvent('alert', [
                 'type' => 'error',
-                'message' => __('Faild to update XML')
+                'message' => __('Failed to update XML')
             ]);
             return;
         }
     
         $xpath = new \DOMXPath($dom);
-        // Look for a placeholder comment to insert mounts.
         $placeholderNodes = $xpath->query('//comment()[contains(., "MOUNTS_PLACEHOLDER")]');
         if ($placeholderNodes->length > 0) {
             $placeholder = $placeholderNodes->item(0);
@@ -245,30 +252,25 @@ class RadioLivewire extends Component
             $parentNode = $dom->documentElement;
         }
     
-        // Loop through active radio configurations and add both ingestion and listener mounts.
         $configs = RadioConfiguration::where('status', 1)->with('plan')->get();
     
         foreach ($configs as $config) {
-            // Ingestion mount for this radio.
             $ingestionMount = $dom->createElement('mount');
             $ingestionMount->setAttribute('type', 'normal');
             $ingestionMountName = $dom->createElement('mount-name', '/source_' . $config->radio_name_slug);
             $ingestionMount->appendChild($ingestionMountName);
             $ingestionUsername = $dom->createElement('username', $config->source);
             $ingestionMount->appendChild($ingestionUsername);
-            // Use the proper field name (lowercase) for password.
             $ingestionPassword = $dom->createElement('password', $config->source_password);
             $ingestionMount->appendChild($ingestionPassword);
             $ingestionMaxListeners = $dom->createElement('max-listeners', 5);
             $ingestionMount->appendChild($ingestionMaxListeners);
             $parentNode->appendChild($ingestionMount);
     
-            // Listener mount for this radio.
             $listenerMount = $dom->createElement('mount');
             $listenerMount->setAttribute('type', 'normal');
             $listenerMountName = $dom->createElement('mount-name', '/' . $config->radio_name_slug);
             $listenerMount->appendChild($listenerMountName);
-            // Use the same source and password as ingestion mount.
             $listenerRadio = $dom->createElement('radio-id', $config->id);
             $listenerMount->appendChild($listenerRadio);
             $listenerUsername = $dom->createElement('username', $config->source);
@@ -279,17 +281,12 @@ class RadioLivewire extends Component
             $maxListeners = $dom->createElement('max-listeners', $maxListenersValue);
             $listenerMount->appendChild($maxListeners);
 
-            if ($config->fallback_mount) {
-                $fallback = $dom->createElement('fallback-mount', $config->fallback_mount);
-                $listenerMount->appendChild($fallback);
-            }
-            if ($config->plan && $config->plan->bitrate) {
-                $bitrate = $dom->createElement('bitrate', $config->plan->bitrate);
-                $listenerMount->appendChild($bitrate);
-            }
-            if ($config->genre) {
-                $genre = $dom->createElement('genre', $config->id);
-                $listenerMount->appendChild($genre);
+            // For genres, use the polymorphic relationship:
+            if ($config->genres()->exists()) {
+                // For example, join genre names (or IDs) with a comma.
+                $genreNames = $config->genres()->pluck('id')->toArray();
+                $genreElement = $dom->createElement('genre', implode(',', $genreNames));
+                $listenerMount->appendChild($genreElement);
             }
             if ($config->description) {
                 $description = $dom->createElement('description', $config->description);
@@ -314,7 +311,7 @@ class RadioLivewire extends Component
         } else {
             $this->dispatchBrowserEvent('alert', [
                 'type' => 'error',
-                'message' => __('Faild to update the icecast.xml')
+                'message' => __('Failed to update the icecast.xml')
             ]);
         }
     }
@@ -322,31 +319,27 @@ class RadioLivewire extends Component
     public function restartPythonTranscoder()
     {
         try {
-            // Execute the command and capture the output.
             $output = shell_exec('sudo supervisorctl restart python_transcoder 2>&1');
-            
-            // Dispatch a success event with the output from the command.
             $this->dispatchBrowserEvent('alert', [
-                'type'    => 'success',
+                'type' => 'success',
                 'message' => __('Python Transcoder restarted successfully. Output: ' . $output)
             ]);
         } catch (\Exception $e) {
-            // Log the error and dispatch an error event.
             Log::error("Failed to restart Python Transcoder: " . $e->getMessage());
             $this->dispatchBrowserEvent('alert', [
-                'type'    => 'error',
+                'type' => 'error',
                 'message' => __('Failed to restart Python Transcoder.')
             ]);
         }
     }
-
+    
     public function changeTab($status)
     {
         $this->statusFilter = $status;
         $this->page = 1;
         $this->emitSelf('refresh');
     }
-    // Restart all radios: update Icecast XML (if needed) and trigger Python updates.
+    
     public function restartAllRadios()
     {
         $this->updateIcecastXml();
@@ -357,7 +350,7 @@ class RadioLivewire extends Component
         }
         $this->dispatchBrowserEvent('alert', [
             'type' => 'success',
-            'message' => __('NAll Active Radios have been updated')
+            'message' => __('All active radios have been updated')
         ]);
     }
 }

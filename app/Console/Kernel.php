@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('cleanup:tmp-genre')->everyFiveMinute();
         $schedule->command('generate:statusfile')->everySevenMinutes();
+        $schedule->command('radio:check-expired')->daily();
         // $schedule->command('inspire')->hourly();
     }
 

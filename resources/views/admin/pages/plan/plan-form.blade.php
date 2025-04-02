@@ -11,14 +11,8 @@
                 </div>
                 <div class="modal-body">
                     <div class="row mb-3">
-                        <!-- Priority -->
-                        <div class="col-md-6">
-                            <label for="priority">{{ __('Priority') }}</label>
-                            <input type="number" class="form-control @error('priority') is-invalid @enderror" wire:model="priority" placeholder="Priority">
-                            @error('priority')<span class="text-danger">{{ __($message) }}</span>@enderror
-                        </div>
                         <!-- Status -->
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6 col-lg-3">
                             <label for="status">{{ __('Status') }}</label>
                             <select class="form-control @error('status') is-invalid @enderror" wire:model="status">
                                 <option value="1">{{ __('Active') }}</option>
@@ -26,29 +20,68 @@
                             </select>
                             @error('status')<span class="text-danger">{{ __($message) }}</span>@enderror
                         </div>
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <label for="support">{{ __('Support') }}</label>
+                            <select class="form-control @error('support') is-invalid @enderror" wire:model="support">
+                                <option value="1">{{ __('Active') }}</option>
+                                <option value="0">{{ __('Non-active') }}</option>
+                            </select>
+                            @error('status')<span class="text-danger">{{ __($message) }}</span>@enderror
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <label for="ribbon">{{ __('Ribbon') }}</label>
+                            <select class="form-control @error('ribbon') is-invalid @enderror" wire:model="ribbon">
+                                <option value="1">{{ __('Active') }}</option>
+                                <option value="0">{{ __('Non-active') }}</option>
+                            </select>
+                            @error('status')<span class="text-danger">{{ __($message) }}</span>@enderror
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <div class="mb-3">
+                                <label for="ribbonText">{{ __('Ribbon Text') }}</label>
+                                <input type="text" class="form-control @error('ribbonText') is-invalid @enderror" wire:model="ribbonText" placeholder="{{ __('Popular') }}">
+                                @error('ribbonText')<span class="text-danger">{{ __($message) }}</span>@enderror
+                            </div>
+                        </div>
+                        <!-- Priority -->
                     </div>
                     <hr class="bg-light">
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-6 col-lg-3">
                             <div class="mb-3">
                                 <label for="bitrate">{{ __('Bitrate (Kbps)') }}</label>
                                 <input type="number" class="form-control @error('bitrate') is-invalid @enderror" wire:model="bitrate" placeholder="{{ __('196') }}">
                                 @error('bitrate')<span class="text-danger">{{ __($message) }}</span>@enderror
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-6 col-lg-3">
                             <div class="mb-3">
-                                <label for="max_listeners">{{ __('Max Listeners') }}</label>
-                                <input type="number" class="form-control @error('max_listeners') is-invalid @enderror" wire:model="max_listeners" placeholder="{{ __('100') }}">
-                                @error('max_listeners')<span class="text-danger">{{ __($message) }}</span>@enderror
+                                <label for="maxListeners">{{ __('Max Listeners') }}</label>
+                                <input type="number" class="form-control @error('maxListeners') is-invalid @enderror" wire:model="maxListeners" placeholder="{{ __('100') }}">
+                                @error('maxListeners')<span class="text-danger">{{ __($message) }}</span>@enderror
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-6 col-lg-3">
                             <div class="mb-3">
-                                <label for="sell_price">{{ __('Sell Price ($)') }}</label>
-                                <input type="number" class="form-control @error('sell_price') is-invalid @enderror" wire:model="sell_price" placeholder="{{ __('50') }}">
-                                @error('sell_price')<span class="text-danger">{{ __($message) }}</span>@enderror
+                                <label for="sellPriceMonthly">{{ __('Sell Price Monthly ($)') }}</label>
+                                <input type="number" class="form-control @error('sellPriceMonthly') is-invalid @enderror" wire:model="sellPriceMonthly" placeholder="{{ __('50') }}">
+                                @error('sellPriceMonthly')<span class="text-danger">{{ __($message) }}</span>@enderror
                             </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <div class="mb-3">
+                                <label for="sellPriceYearly">{{ __('Sell Price Yearly ($)') }}</label>
+                                <input type="number" class="form-control @error('sellPriceYearly') is-invalid @enderror" wire:model="sellPriceYearly" placeholder="{{ __('600') }}">
+                                @error('sellPriceYearly')<span class="text-danger">{{ __($message) }}</span>@enderror
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="bg-light">
+                    <div class="row">
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <label for="priority">{{ __('Priority') }}</label>
+                            <input type="number" class="form-control @error('priority') is-invalid @enderror" wire:model="priority" placeholder="Priority">
+                            @error('priority')<span class="text-danger">{{ __($message) }}</span>@enderror
                         </div>
                     </div>
                 </div>
@@ -74,14 +107,8 @@
                 </div>
                 <div class="modal-body">
                     <div class="row mb-3">
-                        <!-- Priority -->
-                        <div class="col-md-6">
-                            <label for="priority">{{ __('Priority') }}</label>
-                            <input type="number" class="form-control @error('priority') is-invalid @enderror" wire:model="priority" placeholder="Priority">
-                            @error('priority')<span class="text-danger">{{ __($message) }}</span>@enderror
-                        </div>
                         <!-- Status -->
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6 col-lg-3">
                             <label for="status">{{ __('Status') }}</label>
                             <select class="form-control @error('status') is-invalid @enderror" wire:model="status">
                                 <option value="1">{{ __('Active') }}</option>
@@ -89,29 +116,68 @@
                             </select>
                             @error('status')<span class="text-danger">{{ __($message) }}</span>@enderror
                         </div>
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <label for="support">{{ __('Support') }}</label>
+                            <select class="form-control @error('support') is-invalid @enderror" wire:model="support">
+                                <option value="1">{{ __('Active') }}</option>
+                                <option value="0">{{ __('Non-active') }}</option>
+                            </select>
+                            @error('status')<span class="text-danger">{{ __($message) }}</span>@enderror
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <label for="ribbon">{{ __('Ribbon') }}</label>
+                            <select class="form-control @error('ribbon') is-invalid @enderror" wire:model="ribbon">
+                                <option value="1">{{ __('Active') }}</option>
+                                <option value="0">{{ __('Non-active') }}</option>
+                            </select>
+                            @error('status')<span class="text-danger">{{ __($message) }}</span>@enderror
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <div class="mb-3">
+                                <label for="ribbonText">{{ __('Ribbon Text') }}</label>
+                                <input type="text" class="form-control @error('ribbonText') is-invalid @enderror" wire:model="ribbonText" placeholder="{{ __('Popular') }}">
+                                @error('ribbonText')<span class="text-danger">{{ __($message) }}</span>@enderror
+                            </div>
+                        </div>
+                        <!-- Priority -->
                     </div>
                     <hr class="bg-light">
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-6 col-lg-3">
                             <div class="mb-3">
                                 <label for="bitrate">{{ __('Bitrate (Kbps)') }}</label>
                                 <input type="number" class="form-control @error('bitrate') is-invalid @enderror" wire:model="bitrate" placeholder="{{ __('196') }}">
                                 @error('bitrate')<span class="text-danger">{{ __($message) }}</span>@enderror
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-6 col-lg-3">
                             <div class="mb-3">
-                                <label for="max_listeners">{{ __('Max Listeners') }}</label>
-                                <input type="number" class="form-control @error('max_listeners') is-invalid @enderror" wire:model="max_listeners" placeholder="{{ __('100') }}">
-                                @error('max_listeners')<span class="text-danger">{{ __($message) }}</span>@enderror
+                                <label for="maxListeners">{{ __('Max Listeners') }}</label>
+                                <input type="number" class="form-control @error('maxListeners') is-invalid @enderror" wire:model="maxListeners" placeholder="{{ __('100') }}">
+                                @error('maxListeners')<span class="text-danger">{{ __($message) }}</span>@enderror
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-6 col-lg-3">
                             <div class="mb-3">
-                                <label for="sell_price">{{ __('Sell Price ($)') }}</label>
-                                <input type="number" class="form-control @error('sell_price') is-invalid @enderror" wire:model="sell_price" placeholder="{{ __('50') }}">
-                                @error('sell_price')<span class="text-danger">{{ __($message) }}</span>@enderror
+                                <label for="sellPriceMonthly">{{ __('Sell Price Monthly ($)') }}</label>
+                                <input type="number" class="form-control @error('sellPriceMonthly') is-invalid @enderror" wire:model="sellPriceMonthly" placeholder="{{ __('50') }}">
+                                @error('sellPriceMonthly')<span class="text-danger">{{ __($message) }}</span>@enderror
                             </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <div class="mb-3">
+                                <label for="sellPriceYearly">{{ __('Sell Price Yearly ($)') }}</label>
+                                <input type="number" class="form-control @error('sellPriceYearly') is-invalid @enderror" wire:model="sellPriceYearly" placeholder="{{ __('600') }}">
+                                @error('sellPriceYearly')<span class="text-danger">{{ __($message) }}</span>@enderror
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="bg-light">
+                    <div class="row">
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <label for="priority">{{ __('Priority') }}</label>
+                            <input type="number" class="form-control @error('priority') is-invalid @enderror" wire:model="priority" placeholder="Priority">
+                            @error('priority')<span class="text-danger">{{ __($message) }}</span>@enderror
                         </div>
                     </div>
                 </div>

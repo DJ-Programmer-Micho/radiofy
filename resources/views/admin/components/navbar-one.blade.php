@@ -88,6 +88,30 @@
                         </ul>
                     </div>
                 </li> 
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarVerify" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarVerify">
+                        <i class="bx bx-list-ul"></i> <span data-key="t-dashboards">{{__('Verify')}}</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarVerify">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a wire:navigate href="{{route('radio-verify')}}" class="nav-link" data-key="p-plan">{{__('Radio Verify')}}</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li> 
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarPromo" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarPromo">
+                        <i class="bx bx-list-ul"></i> <span data-key="t-dashboards">{{__('Promotion')}}</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarPromo">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a wire:navigate href="{{route('radio-promotion')}}" class="nav-link" data-key="p-plan">{{__('Promotion Plans')}}</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li> 
             </ul>
         </div>
     <div class="sidebar-background"></div>

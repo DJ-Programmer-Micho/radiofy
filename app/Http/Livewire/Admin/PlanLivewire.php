@@ -13,15 +13,17 @@ class PlanLivewire extends Component
     protected $paginationTheme = 'bootstrap';
     protected $queryString = ['statusFilter', 'page'];
 
-    // Language fields
     public $planId;
     public $bitrate;
-    public $max_listeners;
-    public $sell_price;
+    public $maxListeners;
+    public $sellPriceMonthly;
+    public $sellPriceYearly;
     public $priority;
     public $status = 1;
+    public $support = 0;
+    public $ribbon = 0;
+    public $ribbonText;
 
-    // Render/search parameters
     public $search = '';
     public $statusFilter = 'all';
     public $page = 1;
@@ -31,7 +33,6 @@ class PlanLivewire extends Component
     public $deletePlanId;
     public $planNameToDelete  = '';
 
-    // Listen for the FilePond upload event
     protected $listeners = ['fileUploaded'];
 
     public function mount()
@@ -48,69 +49,86 @@ class PlanLivewire extends Component
         $this->emitSelf('refresh');
     }
 
-    // Validation rules for saving a new language
     protected function rulesForSave()
     {
         return [
             'bitrate'       => ['required', 'integer'],
-            'max_listeners' => ['required', 'integer'],
-            'sell_price'    => ['required', 'numeric'],
+            'maxListeners' => ['required', 'integer'],
+            'sellPriceMonthly' => ['required', 'numeric'],
+            'sellPriceYearly'  => ['required', 'numeric'],
             'priority'      => ['required', 'integer'],
+            'support'       => ['required', 'in:0,1'],
+            'ribbon'        => ['required', 'in:0,1'],
             'status'        => ['required', 'in:0,1'],
+            'ribbonText'    => ['required', 'string'],
         ];
     }
 
-    // Validation rules for updating an existing language
     protected function rulesForUpdate()
     {
-        return [
-            'bitrate'       => ['required', 'integer'],
-            'max_listeners' => ['required', 'integer'],
-            'sell_price'    => ['required', 'numeric'],
-            'priority'      => ['required', 'integer'],
-            'status'        => ['required', 'in:0,1'],
-        ];
+        return $this->rulesForSave();
     }
 
-
-    // Saving a new Language
     public function savePlan()
     {
         $validatedData = $this->validate($this->rulesForSave());
-        Plan::create($validatedData);
+        Plan::create([
+           'bitrate' => $validatedData['bitrate'],
+            'max_listeners' => $validatedData['maxListeners'],
+            'sell_price_monthly' => $validatedData['sellPriceMonthly'],
+            'sell_price_yearly' => $validatedData['sellPriceYearly'],
+            'priority' => $validatedData['priority'],
+            'support' => $validatedData['support'],
+            'ribbon' => $validatedData['ribbon'],
+            'status' => $validatedData['status'],
+            'rib_text'  => $validatedData['ribbonText']
+        ]);
 
         $this->resetInput();
         $this->closeModal();
         $this->dispatchBrowserEvent('alert', [
-            'type'    => 'success',
+            'type' => 'success',
             'message' => __('New Plan Added Successfully')
         ]);
     }
 
-    // Editing an existing Language
     public function editPlan($id)
     {
         $plan = Plan::findOrFail($id);
-        $this->planId        = $plan->id;
-        $this->bitrate       = $plan->bitrate;
-        $this->max_listeners = $plan->max_listeners;
-        $this->sell_price    = $plan->sell_price;
-        $this->priority      = $plan->priority;
-        $this->status        = $plan->status;
+        $this->planId           = $plan->id;
+        $this->bitrate          = $plan->bitrate;
+        $this->maxListeners     = $plan->max_listeners;
+        $this->sellPriceMonthly = $plan->sell_price_monthly;
+        $this->sellPriceYearly  = $plan->sell_price_yearly;
+        $this->priority         = $plan->priority;
+        $this->status           = $plan->status;
+        $this->support          = $plan->support;
+        $this->ribbon           = $plan->ribbon;
+        $this->ribbonText       = $plan->rib_text;
     }
-    
-    // Updating an existing Language
+
     public function updatePlan()
     {
         $validatedData = $this->validate($this->rulesForUpdate());
+
         if ($this->planId) {
             $plan = Plan::findOrFail($this->planId);
-            $plan->update($validatedData);
+            $plan->update([
+                'bitrate' => $validatedData['bitrate'],
+                 'max_listeners' => $validatedData['maxListeners'],
+                 'sell_price_monthly' => $validatedData['sellPriceMonthly'],
+                 'sell_price_yearly' => $validatedData['sellPriceYearly'],
+                 'priority' => $validatedData['priority'],
+                 'support' => $validatedData['support'],
+                 'ribbon' => $validatedData['ribbon'],
+                 'status' => $validatedData['status'],
+                 'rib_text'  => $validatedData['ribbonText']
+             ]);
 
             $this->resetInput();
             $this->closeModal();
             $this->dispatchBrowserEvent('alert', [
-                'type'    => 'success',
+                'type' => 'success',
                 'message' => __('Plan updated successfully.')
             ]);
         }
@@ -119,13 +137,13 @@ class PlanLivewire extends Component
     public function confirmDeletePlan($id)
     {
         $this->deletePlanId = $id;
-        $this->planNameToDelete  = '';
+        $this->planNameToDelete = '';
         $this->dispatchBrowserEvent('open-delete-plan-modal');
     }
 
     public function destroyPlan()
     {
-        if ($this->planNameToDelete  !== 'DELETE PLAN') {
+        if ($this->planNameToDelete !== 'DELETE PLAN') {
             return;
         }
 
@@ -133,7 +151,7 @@ class PlanLivewire extends Component
         $plan->delete();
 
         $this->dispatchBrowserEvent('alert', [
-            'type'    => 'success',
+            'type' => 'success',
             'message' => __('Plan deleted successfully.')
         ]);
         $this->resetInput();
@@ -143,21 +161,17 @@ class PlanLivewire extends Component
 
     public function updateStatus(int $id)
     {
-        // Find the brand by ID, if not found return an error
         $dataStatus = Plan::find($id);
-    
+
         if ($dataStatus) {
-            // Toggle the status (0 to 1 and 1 to 0)
             $dataStatus->status = !$dataStatus->status;
             $dataStatus->save();
-    
-            // Dispatch a browser event to show success message
+
             $this->dispatchBrowserEvent('alert', [
                 'type' => 'success',
                 'message' => __('Status Updated Successfully')
             ]);
         } else {
-            // Dispatch a browser event to show error message
             $this->dispatchBrowserEvent('alert', [
                 'type' => 'error',
                 'message' => __('Record Not Found')
@@ -167,51 +181,54 @@ class PlanLivewire extends Component
 
     public function updatePriority(int $p_id, $updatedPriority)
     {
-        // Validate if updatedPriority is a number
         if (!is_numeric($updatedPriority)) {
             $this->dispatchBrowserEvent('alert', [
-                'type' => 'error',  
+                'type' => 'error',
                 'message' => __('Invalid priority value')
             ]);
             return;
         }
-    
-        // Find the brand by ID
-        $brand = Plan::find($p_id);
-        
-        if ($brand) {
-            $brand->priority = $updatedPriority;
-            $brand->save();
-            
+
+        $plan = Plan::find($p_id);
+
+        if ($plan) {
+            $plan->priority = $updatedPriority;
+            $plan->save();
+
             $this->dispatchBrowserEvent('alert', [
-                'type' => 'success',  
+                'type' => 'success',
                 'message' => __('Priority Updated Successfully')
             ]);
         } else {
             $this->dispatchBrowserEvent('alert', [
-                'type' => 'error',  
+                'type' => 'error',
                 'message' => __('Record Not Found')
             ]);
         }
     }
-    
+
     public function resetInput()
     {
         $this->planId = null;
         $this->bitrate = null;
-        $this->max_listeners = null;
-        $this->sell_price = null;
+        $this->maxListeners = null;
+        $this->sellPriceMonthly = null;
+        $this->sellPriceYearly = null;
         $this->priority = Plan::max('priority') + 1;
         $this->status = 1;
+        $this->support = 0;
+        $this->ribbon = 0;
+        $this->ribbonText = null;
         $this->deletePlanId = null;
-        $this->planNameToDelete  = '';
+        $this->planNameToDelete = '';
     }
+
     public function closeModal()
     {
         $this->dispatchBrowserEvent('close-modal');
         $this->resetInput();
     }
-    
+
     public function render()
     {
         $this->activeCount = Plan::where('status', 1)->count();
@@ -229,11 +246,13 @@ class PlanLivewire extends Component
             $query->where(function ($q) {
                 $q->where('bitrate', 'like', '%' . $this->search . '%')
                   ->orWhere('max_listeners', 'like', '%' . $this->search . '%')
-                  ->orWhere('sell_price', 'like', '%' . $this->search . '%');
+                  ->orWhere('sell_price_monthly', 'like', '%' . $this->search . '%')
+                  ->orWhere('sell_price_yearly', 'like', '%' . $this->search . '%');
             });
         }
 
         $tableData = $query->orderBy('priority', 'ASC')->paginate(10)->withQueryString();
+
         return view('admin.pages.plan.plan-table', [
             'tableData' => $tableData,
         ]);

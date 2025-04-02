@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use App\Models\SubscriberProfile;
 
-
 class Subscriber extends Authenticatable implements JWTSubject
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -33,7 +32,7 @@ class Subscriber extends Authenticatable implements JWTSubject
 
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'phone_verified_at' => 'datetime',
+        'phone_verified_at'  => 'datetime',
     ];
 
     // JWT methods
@@ -41,12 +40,13 @@ class Subscriber extends Authenticatable implements JWTSubject
     {
         return $this->getKey();
     }
-
     public function getJWTCustomClaims()
     {
         return [];
     }
 
-    public function subscriber_profile() { return $this->hasOne(SubscriberProfile::class, 'subscriber_id'); }
-    
+    public function subscriber_profile()
+    {
+        return $this->hasOne(SubscriberProfile::class, 'subscriber_id');
+    }
 }

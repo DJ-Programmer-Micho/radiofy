@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class RadioConfigurationProfile extends Model
 {
     use HasFactory;
-    protected $table = 'radio_configuration_profiles'; 
-    public $fillable = [
+    
+    protected $table = 'radio_configuration_profiles';
+    protected $fillable = [
         'radio_id',
         'logo',
         'banner',
@@ -17,13 +18,13 @@ class RadioConfigurationProfile extends Model
         'location',
         'description',
         'meta_keywords',
-        'genres',
         'social_media',
         'highest_peak_listeners',
         'radio_locale',
     ];
 
-    public function radio_profile() {
+    public function radio_profile()
+    {
         return $this->belongsTo(RadioConfiguration::class, 'radio_id');
     }
     public function languages()
@@ -35,5 +36,4 @@ class RadioConfigurationProfile extends Model
             'language_id'
         )->withTimestamps();
     }
-
 }

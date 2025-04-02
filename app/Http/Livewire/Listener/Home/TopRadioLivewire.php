@@ -4,23 +4,58 @@ namespace App\Http\Livewire\Listener\Home;
 
 use Livewire\Component;
 use App\Models\RadioConfiguration;
+use App\Models\ExternalRadioConfiguration;
 
 class TopRadioLivewire extends Component
 {
-
-    public function mount() {
-
-    }
     public function render()
     {
-        // Fetch active radios with the count of listeners, ordered by listeners_count in descending order
-        $topRadios = RadioConfiguration::where('radio_configurations.status', 1)
-            ->join('radio_configuration_profiles', 'radio_configurations.id', '=', 'radio_configuration_profiles.radio_id')
-            ->orderBy('radio_configuration_profiles.highest_peak_listeners', 'desc')
-            ->select('radio_configurations.*', 'radio_configuration_profiles.highest_peak_listeners')
-            ->take(10)
-            ->get();
-    
+        // Fetch, sort, and take top 10 internal radios
+        $internalRadios = RadioConfiguration::with([
+                'radio_configuration_profile',
+                'genres'
+            ])
+            ->withCount('listeners')
+            ->where('status', 1)
+            ->get()
+            ->sortByDesc(function ($radio) {
+                $listeners = $radio->listeners_count;
+                $peak = $radio->radio_configuration_profile->highest_peak_listeners ?? 0;
+                return max($peak, $listeners);
+            })
+            ->take(5);
+
+        // Fetch, sort, and take top 10 external radios
+        $externalRadios = ExternalRadioConfiguration::with([
+                'external_radio_configuration_profile',
+                'genres'
+            ])
+            ->withCount('listeners')
+            ->where('status', 1)
+            ->get()
+            ->sortByDesc(function ($radio) {
+                $listeners = $radio->listeners_count;
+                $peak = $radio->external_radio_configuration_profile->highest_peak_listeners ?? 0;
+                return max($peak, $listeners);
+            })
+            ->take(5);
+
+        // Merge both collections
+        $topRadios = $internalRadios->merge($externalRadios);
+
+        // Optional: sort the combined collection if you want a unified ranking
+        $topRadios = $topRadios->sortByDesc(function ($radio) {
+            $listeners = $radio->listeners_count;
+            if ($radio instanceof RadioConfiguration && $radio->radio_configuration_profile) {
+                $peak = $radio->radio_configuration_profile->highest_peak_listeners ?? 0;
+            } elseif ($radio instanceof ExternalRadioConfiguration && $radio->external_radio_configuration_profile) {
+                $peak = $radio->external_radio_configuration_profile->highest_peak_listeners ?? 0;
+            } else {
+                $peak = 0;
+            }
+            return max($peak, $listeners);
+        });
+
 
         return view('listener.pages.home.topRadio', [
             'topRadios' => $topRadios,

@@ -1,30 +1,10 @@
-<div class="page-content">
-    <style>
-        .m-index{
-            z-index: 9999;
-        }
-    </style>
-    @include('subscriber.pages.new-plan.formPlanGrid',[
-        'plan' => $this->planSelected ?? null,
-        'duration' => $this->durationSelect
-        ])
-    <div class="container-fluid">
-        <!-- Page Title -->
-        <div class="row">
-            <div class="col-12">
-                <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                    <h4 class="mb-sm-0">{{ __('Radios') }}</h4>
-                    <div class="page-title-right">
-                        <ol class="breadcrumb m-0">
-                            <li class="breadcrumb-item"><a href="javascript: void(0);">{{ __('Dashboard') }}</a></li>
-                            <li class="breadcrumb-item active">{{ __('Radios') }}</li>
-                        </ol>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div>
 
         <div class="row justify-content-center mt-4">
+            @include('subscriber.pages.new-plan.formPlanGrid',[
+                'plan' => $this->planSelected ?? null,
+                'duration' => $this->durationSelect
+                ])
             <div class="col-lg-5">
                 <div class="text-center mb-4">
                     <h4 class="fs-22">Plans & Pricing</h4>
@@ -136,14 +116,20 @@
                             </li>
                         </ul>
                         <div class="mt-3 pt-2">
-                            @if (in_array($plan->id, $subscriberPlanIds))
-                                <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#getRadioModal" wire:click="selectPlan('{{ $plan->id }}')">
-                                    Add one more
-                                </button>
+                            @if (auth()->guard('subscriber')->check())
+                                @if (in_array($plan->id, $subscriberPlanIds))
+                                    <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#getRadioModal" wire:click="selectPlan('{{ $plan->id }}')">
+                                        Add one more
+                                    </button>
+                                @else
+                                    <button type="button" class="btn btn-info w-100" data-bs-toggle="modal" data-bs-target="#getRadioModal" wire:click="selectPlan('{{ $plan->id }}')">
+                                        Get Radio
+                                    </button>
+                                @endif
                             @else
-                                <button type="button" class="btn btn-info w-100" data-bs-toggle="modal" data-bs-target="#getRadioModal" wire:click="selectPlan('{{ $plan->id }}')">
-                                    Get Radio
-                                </button>
+                            <a wire:navigate href="{{ route("subs.signup") }}" type="button" class="btn btn-info w-100">
+                                Get Radio
+                            </a>
                             @endif
                         </div>
                     </div>
@@ -575,12 +561,7 @@
                 </div>
             </div>
             @endforeach
-
-            <!--end col-->
         </div>
-        <!--end row-->
-
-    </div>
 </div>
 
 @push('radio_script')

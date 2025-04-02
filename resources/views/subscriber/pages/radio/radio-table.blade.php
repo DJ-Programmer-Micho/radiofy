@@ -4,7 +4,7 @@
             z-index: 9999;
         }
     </style>
-    @include('subscriber.pages.radio.radio-form', ['title' => "Radio Configuration"])
+    {{-- @include('subscriber.pages.radio.radio-form', ['title' => "Radio Configuration"]) --}}
     <div class="container-fluid">
         <!-- Page Title -->
         <div class="row">

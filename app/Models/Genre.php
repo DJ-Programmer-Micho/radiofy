@@ -14,17 +14,23 @@ class Genre extends Model
         'priority',
         'status',
         'image',
+        'image_sq',
     ];
 
-    // Assuming each genre has one translation for the default locale.
+    // Each genre can have one translation for the default locale.
     public function genreTranslation()
     {
         return $this->hasOne(GenreTranslater::class, 'genre_id');
     }
     
-    // Each genre can have many radio configurations.
-    public function radioConfigurations()
+    public function internalRadios()
     {
-        return $this->hasMany(RadioConfiguration::class, 'genre_id');
+        return $this->morphedByMany(RadioConfiguration::class, 'genreable');
     }
+    
+    public function externalRadios()
+    {
+        return $this->morphedByMany(ExternalRadioConfiguration::class, 'genreable');
+    }
+    
 }

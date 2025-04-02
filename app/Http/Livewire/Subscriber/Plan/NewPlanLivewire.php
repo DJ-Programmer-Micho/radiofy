@@ -8,8 +8,8 @@ use Livewire\Component;
 use Illuminate\Support\Str;
 use App\Models\RadioSubscription;
 use App\Models\RadioConfiguration;
-use Illuminate\Support\Facades\DB;
 use App\Models\RadioConfigurationProfile;
+use Illuminate\Support\Facades\DB;
 
 class NewPlanLivewire extends Component
 {
@@ -22,7 +22,7 @@ class NewPlanLivewire extends Component
     public $durationSelect = 'monthly';
 
     public function mount(){
-        
+        // Optionally initialize any defaults here.
     }
 
     protected $rules = [
@@ -37,42 +37,49 @@ class NewPlanLivewire extends Component
     }
 
     public function selectPlan($id){
-        $this->planSelected = Plan::where('id', $id)->where('status', 1)->first();
+        $this->planSelected = Plan::where('id', $id)
+            ->where('status', 1)
+            ->first();
     }
 
     public function addRadio()
     {
-        // Validate all inputs
+        // Validate all inputs.
         $this->validate();
 
+        // Create internal radio configuration.
         $radio = RadioConfiguration::create([
-            'subscriber_id'    => auth()->guard('subscriber')->id(),
-            'plan_id'          => $this->planSelected->id,
-            'genre_id'         => null,
-            'radio_name'       => $this->radioName,
-            'radio_name_slug'  => Str::slug($this->radioName),
-            'source'           => $this->serverSource."@mradiofy",
-            'source_password'  => $this->serverPassword,
-            'fallback_mount'   => '/fallback',
-            'status'           => 1,
+            'subscriber_id'   => auth()->guard('subscriber')->id(),
+            'plan_id'         => $this->planSelected->id,
+            'genre_id'        => null,
+            'radio_name'      => $this->radioName,
+            'radio_name_slug' => Str::slug($this->radioName),
+            'source'          => $this->serverSource . "@mradiofy",
+            'source_password' => $this->serverPassword,
+            'fallback_mount'  => '/fallback',
+            'status'          => 1,
         ]);
 
+        // Create associated profile record.
         RadioConfigurationProfile::create([
-            'radio_id'      => $radio->id,
+            'radio_id' => $radio->id,
         ]);
 
+        // Calculate subscription expiry date.
         $expireDate = $this->durationSelect === 'monthly'
             ? Carbon::now()->addMonth()
             : Carbon::now()->addYear();
 
-        RadioSubscription::insert([
-            'subscriber_id'          => auth()->guard('subscriber')->id(),
-            'radio_configuration_id' => $radio->id, 
-            'plan_id'                => $this->planSelected->id,               
-            'payment_frequency'      => $this->durationSelect,
-            'subscribed_date'        => Carbon::now(),
-            'renew_date'             => $expireDate,
-            'expire_date'            => $expireDate,
+        // Create subscription using polymorphic fields.
+        RadioSubscription::create([
+            'subscriber_id'   => auth()->guard('subscriber')->id(),
+            'radioable_id'    => $radio->id,
+            'radioable_type'  => RadioConfiguration::class,
+            'plan_id'         => $this->planSelected->id,
+            'payment_frequency' => $this->durationSelect,
+            'subscribed_date'   => Carbon::now(),
+            'renew_date'        => $expireDate,
+            'expire_date'       => $expireDate,
         ]);
 
         $this->dispatchBrowserEvent('alert', [
@@ -80,7 +87,7 @@ class NewPlanLivewire extends Component
             'message' => __('Radio added successfully.')
         ]);
 
-        // Dispatch an event to close the modal on the front-end
+        // Dispatch an event to close the modal.
         $this->dispatchBrowserEvent('close-modal');
         return redirect()->route('subs-radios');
     }
@@ -90,9 +97,12 @@ class NewPlanLivewire extends Component
         $this->reset(['radioName', 'serverSource', 'serverPassword', 'planSelected']);
         $this->dispatchBrowserEvent('close-modal');
     }
-    public function changeDuration($duration) {
+    
+    public function changeDuration($duration)
+    {
         $this->durationSelect = $duration;
     }
+
     public function render()
     {
         $plans_64 = Plan::where('bitrate', '64')->where('status', 1)->get();
@@ -102,8 +112,8 @@ class NewPlanLivewire extends Component
         $plans_320 = Plan::where('bitrate', '320')->where('status', 1)->get();
 
         $subscriberPlanIds = RadioConfiguration::where('subscriber_id', auth()->guard('subscriber')->id())
-        ->pluck('plan_id')
-        ->toArray();
+            ->pluck('plan_id')
+            ->toArray();
         
         return view('subscriber.pages.new-plan.planGrid', [
             'plans_64' => $plans_64,
@@ -114,5 +124,4 @@ class NewPlanLivewire extends Component
             'subscriberPlanIds' => $subscriberPlanIds,
         ]);
     }
-    
 }

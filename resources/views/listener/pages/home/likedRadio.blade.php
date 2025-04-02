@@ -1,5 +1,5 @@
 {{-- NOT USED COMPONENT --}}
-<div class="px-3">
+<div class="p-3">
     <div class="tab-content tab-content-carousel">
         <h1>The Radios You Liked</h1>
             <div class="owl-carousel owl-full carousel-equal-height carousel-with-shadow" data-toggle="owl" 
@@ -33,147 +33,36 @@
                         }
                     }
                 }'>
-                <div class="card-poster">
-                    <div style="overflow: hidden;">
-                        <img src="https://d7tztcuqve7v9.cloudfront.net/rest/yamiyam/setting/yamiyam_logo_2023181117003269916864.jpeg" class="img-fluid rounded" alt="Radio_logo_name">
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="m-0"><b>M Radio Iraq</b></p>
+                @foreach($likedRadios as $radio)
+                    <div class="card-poster radio-card-1">
+                        {{-- <button type="button" class="btn btn-none p-0" wire:click="$emit('playNowEvent', {{ $radio->id }})"> --}}
+                            <button type="button" class="btn btn-none p-0" onclick="window.dispatchEvent(new CustomEvent('switch-radio', { detail: { radioId: {{ $radio->id }}, radioType: '{{ $radio->type }}' } }));">
+                                <div class="player-icon" style="overflow: hidden;">
+                                <img src="{{ $radio->profile->logo 
+                                            ? asset('storage/' . $radio->profile->logo) 
+                                            : asset('assets/logo/mradiofy-logo.png') }}" 
+                                    class="img-fluid" 
+                                    width="50" 
+                                    height="50" 
+                                    alt="Logo">
+                            </div>
+                        </button>
+                        <div class="d-flex justify-content-start">
+                            <div>
+                                <a href="{{ route('listener.radio',['slug' => $radio->radio_name_slug])}}" rel="noopener noreferrer">
+                                    <p class="m-0"><b>{{ $radio->radio_name }}</b></p>
+                                </a>
+                            </div>
+                            <div>
+                                @if ($radio->verified )
+                                <img src="{{ asset('/assets/img/verify2.png') }}" alt="" width="15" height="15" class="mx-1"
+                                style="max-width:15px; max-height:15px">
+                                @endif
+                            </div>
                         </div>
-                        <div>
-                            <img src="{{ asset('/assets/img/verify2.png') }}" alt="" width="15" height="15" style="max-width:15px; max-height:15px">
-                        </div>
+                        <p class="m-0">{{ number_format($radio->listeners_count) }} Listeners</p>
                     </div>
-                    <p class="m-0">7,654,123 Lisiteners</p>
-                </div>
-                <div class="card-poster">
-                    <div style="overflow: hidden;">
-                        <img src="https://d7tztcuqve7v9.cloudfront.net/rest/yamiyam/setting/yamiyam_logo_2023181117003269916864.jpeg" class="img-fluid rounded" alt="Radio_logo_name">
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="m-0"><b>M Radio Iraq</b></p>
-                        </div>
-                        <div>
-                            <img src="{{ asset('/assets/img/verify2.png') }}" alt="" width="15" height="15" style="max-width:15px; max-height:15px">
-                        </div>
-                    </div>
-                    <p class="m-0">7,654,123 Lisiteners</p>
-                </div>
-                <div class="card-poster">
-                    <div style="overflow: hidden;">
-                        <img src="https://d7tztcuqve7v9.cloudfront.net/rest/yamiyam/setting/yamiyam_logo_2023181117003269916864.jpeg" class="img-fluid rounded" alt="Radio_logo_name">
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="m-0"><b>M Radio Iraq</b></p>
-                        </div>
-                        <div>
-                            <img src="{{ asset('/assets/img/verify2.png') }}" alt="" width="15" height="15" style="max-width:15px; max-height:15px">
-                        </div>
-                    </div>
-                    <p class="m-0">7,654,123 Lisiteners</p>
-                </div>
-                <div class="card-poster">
-                    <div style="overflow: hidden;">
-                        <img src="https://d7tztcuqve7v9.cloudfront.net/rest/yamiyam/setting/yamiyam_logo_2023181117003269916864.jpeg" class="img-fluid rounded" alt="Radio_logo_name">
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="m-0"><b>M Radio Iraq</b></p>
-                        </div>
-                        <div>
-                            <img src="{{ asset('/assets/img/verify2.png') }}" alt="" width="15" height="15" style="max-width:15px; max-height:15px">
-                        </div>
-                    </div>
-                    <p class="m-0">7,654,123 Lisiteners</p>
-                </div>
-                <div class="card-poster">
-                    <div style="overflow: hidden;">
-                        <img src="https://d7tztcuqve7v9.cloudfront.net/rest/yamiyam/setting/yamiyam_logo_2023181117003269916864.jpeg" class="img-fluid rounded" alt="Radio_logo_name">
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="m-0"><b>M Radio Iraq</b></p>
-                        </div>
-                        <div>
-                            <img src="{{ asset('/assets/img/verify2.png') }}" alt="" width="15" height="15" style="max-width:15px; max-height:15px">
-                        </div>
-                    </div>
-                    <p class="m-0">7,654,123 Lisiteners</p>
-                </div>
-                <div class="card-poster">
-                    <div style="overflow: hidden;">
-                        <img src="https://d7tztcuqve7v9.cloudfront.net/rest/yamiyam/setting/yamiyam_logo_2023181117003269916864.jpeg" class="img-fluid rounded" alt="Radio_logo_name">
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="m-0"><b>M Radio Iraq</b></p>
-                        </div>
-                        <div>
-                            <img src="{{ asset('/assets/img/verify2.png') }}" alt="" width="15" height="15" style="max-width:15px; max-height:15px">
-                        </div>
-                    </div>
-                    <p class="m-0">7,654,123 Lisiteners</p>
-                </div>
-                <div class="card-poster">
-                    <div style="overflow: hidden;">
-                        <img src="https://d7tztcuqve7v9.cloudfront.net/rest/yamiyam/setting/yamiyam_logo_2023181117003269916864.jpeg" class="img-fluid rounded" alt="Radio_logo_name">
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="m-0"><b>M Radio Iraq</b></p>
-                        </div>
-                        <div>
-                            <img src="{{ asset('/assets/img/verify2.png') }}" alt="" width="15" height="15" style="max-width:15px; max-height:15px">
-                        </div>
-                    </div>
-                    <p class="m-0">7,654,123 Lisiteners</p>
-                </div>
-                <div class="card-poster">
-                    <div style="overflow: hidden;">
-                        <img src="https://d7tztcuqve7v9.cloudfront.net/rest/yamiyam/setting/yamiyam_logo_2023181117003269916864.jpeg" class="img-fluid rounded" alt="Radio_logo_name">
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="m-0"><b>M Radio Iraq</b></p>
-                        </div>
-                        <div>
-                            <img src="{{ asset('/assets/img/verify2.png') }}" alt="" width="15" height="15" style="max-width:15px; max-height:15px">
-                        </div>
-                    </div>
-                    <p class="m-0">7,654,123 Lisiteners</p>
-                </div>
-                <div class="card-poster">
-                    <div style="overflow: hidden;">
-                        <img src="https://d7tztcuqve7v9.cloudfront.net/rest/yamiyam/setting/yamiyam_logo_2023181117003269916864.jpeg" class="img-fluid rounded" alt="Radio_logo_name">
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="m-0"><b>M Radio Iraq</b></p>
-                        </div>
-                        <div>
-                            <img src="{{ asset('/assets/img/verify2.png') }}" alt="" width="15" height="15" style="max-width:15px; max-height:15px">
-                        </div>
-                    </div>
-                    <p class="m-0">7,654,123 Lisiteners</p>
-                </div>
-                <div class="card-poster">
-                    <div style="overflow: hidden;">
-                        <img src="https://d7tztcuqve7v9.cloudfront.net/rest/yamiyam/setting/yamiyam_logo_2023181117003269916864.jpeg" class="img-fluid rounded" alt="Radio_logo_name">
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="m-0"><b>M Radio Iraq</b></p>
-                        </div>
-                        <div>
-                            <img src="{{ asset('/assets/img/verify2.png') }}" alt="" width="15" height="15" style="max-width:15px; max-height:15px">
-                        </div>
-                    </div>
-                    <p class="m-0">7,654,123 Lisiteners</p>
-                </div>
-                
+                @endforeach 
             </div><!-- End .owl-carousel -->
 
     </div><!-- End .tab-content -->

@@ -8,21 +8,21 @@
 @push('super_script')
 <script>
     window.addEventListener('close-modal', event => {
-        $('#addLanguageModal').modal('hide');
-        $('#updateLanguageModal').modal('hide');
-        $('#deleteLanguageModal').modal('hide');
+        $('#addPlanModal').modal('hide');
+        $('#updatePlanModal').modal('hide');
+        $('#deletePlanModal').modal('hide');
     })
 
     document.addEventListener('DOMContentLoaded', function () {
-        new bootstrap.Modal(document.getElementById('addLanguageModal'), {
+        new bootstrap.Modal(document.getElementById('addPlanModal'), {
             backdrop: 'static',  // Prevent closing when clicking outside
             keyboard: false      // Prevent closing on escape key press
         });
-        new bootstrap.Modal(document.getElementById('updateLanguageModal'), {
+        new bootstrap.Modal(document.getElementById('updatePlanModal'), {
             backdrop: 'static',  // Prevent closing when clicking outside
             keyboard: false      // Prevent closing on escape key press
         });
-        new bootstrap.Modal(document.getElementById('deleteLanguageModal'), {
+        new bootstrap.Modal(document.getElementById('deletePlanModal'), {
             backdrop: 'static',  // Prevent closing when clicking outside
             keyboard: false      // Prevent closing on escape key press
         });

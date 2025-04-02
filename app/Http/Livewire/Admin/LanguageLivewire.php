@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Storage;
 class LanguageLivewire extends Component
 {
     use WithPagination;
+    use WithFileUploads;
 
     protected $paginationTheme = 'bootstrap';
     protected $queryString = ['statusFilter', 'page'];
@@ -24,6 +25,8 @@ class LanguageLivewire extends Component
     public $name;
     public $priority;
     public $status = 1;
+    public $objectName;   // Landscape image file path
+    public $objectNameSq; // Square image file path
 
     // Render/search parameters
     public $search = '';
@@ -36,7 +39,7 @@ class LanguageLivewire extends Component
     public $languageNameToDelete = '';
 
     // Listen for the FilePond upload event
-    protected $listeners = ['fileUploaded'];
+    protected $listeners = ['fileUploaded','fileUploadedSq'];
 
     public function mount()
     {
@@ -57,7 +60,7 @@ class LanguageLivewire extends Component
     {
         return [
             'code'     => ['required', 'string', 'unique:languages,code'],
-            'name'     => ['required', 'string'],
+            'name'     => ['required', 'string', 'unique:languages,name'],
             'priority' => ['required', 'integer'],
             'status'   => ['required', 'in:0,1'],
         ];
@@ -68,7 +71,7 @@ class LanguageLivewire extends Component
     {
         return [
             'code'     => ['required', 'string', Rule::unique('languages', 'code')->ignore($this->languageId)],
-            'name'     => ['required', 'string'],
+            'name'     => ['required', 'string', Rule::unique('languages', 'name')->ignore($this->languageId)],
             'priority' => ['required', 'integer'],
             'status'   => ['required', 'in:0,1'],
         ];
@@ -79,8 +82,29 @@ class LanguageLivewire extends Component
     public function saveLanguage()
     {
         $validatedData = $this->validate($this->rulesForSave());
-        Language::create($validatedData);
-    
+        // Move landscape image from temporary to permanent storage
+        if (strpos($this->objectName, 'tmp/lang') === 0) {
+            $newPath = str_replace('tmp/lang', 'lang', $this->objectName);
+            Storage::disk('public')->move($this->objectName, $newPath);
+            $this->objectName = $newPath;
+        }
+
+        // Move square image from temporary to permanent storage
+        if (strpos($this->objectNameSq, 'tmp/lang') === 0) {
+            $newPathSq = str_replace('tmp/lang', 'lang', $this->objectNameSq);
+            Storage::disk('public')->move($this->objectNameSq, $newPathSq);
+            $this->objectNameSq = $newPathSq;
+        }
+
+        Language::create([
+            'code' => $validatedData['code'],
+            'name' => $validatedData['name'],
+            'priority' => $validatedData['priority'],
+            'status' => $validatedData['status'],
+            'image'    => $this->objectName,
+            'image_sq' => $this->objectNameSq,
+        ]);
+        
         $this->resetInput();
         $this->closeModal();
         $this->dispatchBrowserEvent('alert', [
@@ -98,15 +122,49 @@ class LanguageLivewire extends Component
         $this->name       = $language->name;
         $this->priority   = $language->priority;
         $this->status     = $language->status;
-    }
+        $this->objectName = $language->image;
+        $this->objectNameSq = $language->image_sq;
+    
+        // Emit events for FilePond preview
+        if ($this->objectName) {
+            $this->dispatchBrowserEvent('setFilePondFile', ['file' => asset('storage/' . $this->objectName)]);
+        }
+    
+        if ($this->objectNameSq) {
+            $this->dispatchBrowserEvent('setFilePondFileSq', ['file' => asset('storage/' . $this->objectNameSq)]);
+        }
+    }    
     
     // Updating an existing Language
     public function updateLanguage()
     {
         $validatedData = $this->validate($this->rulesForUpdate());
+
         if ($this->languageId) {
             $language = Language::findOrFail($this->languageId);
-            $language->update($validatedData);
+
+            // Move landscape image if newly uploaded
+            if (strpos($this->objectName, 'tmp/lang') === 0) {
+                $newPath = str_replace('tmp/lang', 'lang', $this->objectName);
+                Storage::disk('public')->move($this->objectName, $newPath);
+                $this->objectName = $newPath;
+            }
+
+            // Move square image if newly uploaded
+            if (strpos($this->objectNameSq, 'tmp/lang') === 0) {
+                $newPathSq = str_replace('tmp/lang', 'lang', $this->objectNameSq);
+                Storage::disk('public')->move($this->objectNameSq, $newPathSq);
+                $this->objectNameSq = $newPathSq;
+            }
+
+            $language->update([
+                'code' => $validatedData['code'],
+                'name' => $validatedData['name'],
+                'priority' => $validatedData['priority'],
+                'status' => $validatedData['status'],
+                'image' => $this->objectName,
+                'image_sq' => $this->objectNameSq,
+            ]);
 
             $this->resetInput();
             $this->closeModal();
@@ -116,6 +174,7 @@ class LanguageLivewire extends Component
             ]);
         }
     }
+
 
     public function confirmDeleteLanguage($id)
     {
@@ -202,9 +261,14 @@ class LanguageLivewire extends Component
         $this->code = null;
         $this->name = null;
         $this->priority = Language::max('priority') + 1;
+        $this->objectName = null;
+        $this->objectNameSq = null;
         $this->deletelanguageId = null;
         $this->languageNameToDelete = '';
+    
+        $this->dispatchBrowserEvent('clearFilePondInputs');
     }
+    
     
     public function closeModal()
     {
@@ -237,5 +301,23 @@ class LanguageLivewire extends Component
         return view('admin.pages.language.language-table', [
             'tableData' => $tableData,
         ]);
+    }
+
+    public function fileUploaded($serverId)
+    {
+        $cleaned = trim($serverId, '"');
+        if ($this->objectName && $this->objectName !== $cleaned && strpos($this->objectName, 'tmp/lang') === 0) {
+            Storage::disk('public')->delete($this->objectName);
+        }
+        $this->objectName = $cleaned;
+    }
+
+    public function fileUploadedSq($serverId)
+    {
+        $cleaned = trim($serverId, '"');
+        if ($this->objectNameSq && $this->objectNameSq !== $cleaned && strpos($this->objectNameSq, 'tmp/lang') === 0) {
+            Storage::disk('public')->delete($this->objectNameSq);
+        }
+        $this->objectNameSq = $cleaned;
     }
 }

@@ -20,12 +20,12 @@ return new class extends Migration
             $table->string('source')->unique()->nullable();
             $table->string('source_password');
             $table->string('fallback_mount')->nullable();
+            $table->unsignedInteger('verified')->default(0);
             $table->unsignedInteger('status')->default(1);
             $table->timestamps();
 
             $table->foreign('subscriber_id')->references('id')->on('subscribers')->onDelete('cascade');
             $table->foreign('plan_id')->references('id')->on('plans')->onDelete('cascade');
-            $table->foreign('genre_id')->references('id')->on('genres')->onDelete('cascade');
         });
     }
 
@@ -34,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('radio_ronfiguration');
+        Schema::dropIfExists('radio_ronfigurations');
     }
 };

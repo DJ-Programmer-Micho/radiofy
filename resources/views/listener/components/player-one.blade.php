@@ -5,8 +5,8 @@
             <div class="song-bar">
                 <div class="song-infos">
                     <div class="image-container">
-                        <img src="{{ $current_radio->radio_configuration_profile->logo 
-                                    ? asset('storage/' . $current_radio->radio_configuration_profile->logo) 
+                        <img src="{{ $current_radio->profile->logo 
+                                    ? asset('storage/' . $current_radio->profile->logo) 
                                     : asset('assets/logo/mradiofy-logo.png') }}" alt="Logo" />
                     </div>
                     <div class="song-description">
@@ -51,41 +51,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js" integrity="sha512-Pv7v88hS3yE2c+Zr7Ay/2q6RZlNRcxE0QAWC7e9GIVeZpqMk6FtdGqtXzLI7LJ83R9o2n7HLwMck2RrSJvWDnIw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 <script>
-    // // Global Howler instance.
-    // window.currentHowl = null;
-
-    // // Listen for the "play-radio" event from Livewire.
-    // window.addEventListener('play-radio', event => {
-    //     const streamUrl = event.detail.streamUrl;
-    //     console.log('play-radio event received with URL:', streamUrl);
-    //     if (window.currentHowl) {
-    //         window.currentHowl.unload();
-    //     }
-    //     window.currentHowl = new Howl({
-    //         src: [streamUrl],
-    //         html5: true,
-    //         onplay: function() {
-    //             console.log('Howl started playing.');
-    //             animateLiveProgress();
-    //         },
-    //         onloaderror: function(id, error) {
-    //             console.error('Error loading stream:', error);
-    //         }
-    //     });
-    //     window.currentHowl.play();
-    // });
-
-    // // Listen for the "pause-radio" event from Livewire.
-    // window.addEventListener('pause-radio', event => {
-    //     console.log('pause-radio event received.');
-    //     if (window.currentHowl) {
-    //         window.currentHowl.pause();
-    //         console.log("Stream paused");
-    //     } else {
-    //         console.log("No currentHowl instance to pause.");
-    //     }
-    // });
-
     if (!window.turboAudioInitialized) {
     window.turboAudioInitialized = true;
 

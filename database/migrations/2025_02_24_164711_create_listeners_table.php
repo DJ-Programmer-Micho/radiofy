@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('email_otp_number')->nullable();
             $table->string('phone_otp_number')->nullable();
             $table->string('uid')->nullable();
+            $table->json('recent_radios')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->timestamp('phone_verified_at')->nullable();
             $table->rememberToken();

@@ -9,8 +9,7 @@ class RadioConfiguration extends Model
 {
     use HasFactory;
     
-    // Recommended to fix the typo if possible
-    protected $table = 'radio_configurations'; 
+    protected $table = 'radio_configurations';
     protected $fillable = [
         'subscriber_id',
         'plan_id',
@@ -19,45 +18,79 @@ class RadioConfiguration extends Model
         'source',
         'source_password',
         'fallback_mount',
-        'description',
+        'verified',
         'status',
     ];
 
     protected $casts = [
-        'social_media'  => 'array',
-        'radio_locale'  => 'array',
-        'genres'        => 'array',
+        'social_media' => 'array',
+        'radio_locale' => 'array',
     ];
 
-    
-    public function subscriber() {
+    public function subscriber()
+    {
         return $this->belongsTo(Subscriber::class, 'subscriber_id');
     }
-
-    public function plan() {
+    public function plan()
+    {
         return $this->belongsTo(Plan::class, 'plan_id');
     }
-
     public function duration()
     {
-        return $this->hasOne(RadioSubscription::class, 'radio_configuration_id');
-    }
-
-
-    public function listeners()
-    {
-        return $this->belongsToMany(Listener::class, 'listener_radio_configuration', 'radio_configuration_id', 'listener_id')
-                    ->withTimestamps();
-    }
-
-    public function genre()
-    {
-        return $this->belongsTo(\App\Models\Genre::class, 'genre_id');
+        return $this->morphOne(RadioSubscription::class, 'radioable');
     }
 
     public function radio_configuration_profile()
     {
         return $this->hasOne(RadioConfigurationProfile::class, 'radio_id');
     }
+    // Polymorphic interactions
+    // App\Models\RadioConfiguration.php
+    public function languages()
+    {
+        return $this->morphToMany(Language::class, 'languageable');
+    }
+    public function genres()
+    {
+        return $this->morphToMany(Genre::class, 'genreable');
+    }
+    public function listeners()
+    {
+        return $this->morphToMany(Listener::class, 'radioable', 'listener_radios', 'radioable_id', 'listener_id')
+                    ->withTimestamps();
+    }
+    public function likes()
+    {
+        return $this->morphMany(Like::class, 'radioable');
+    }
+    public function follows()
+    {
+        return $this->morphMany(Follow::class, 'radioable');
+    }
+    public function comments()
+    {
+        return $this->morphMany(Comment::class, 'radioable');
+    }
 
+    // Call Methods
+    public function getProfileAttribute()
+    {
+        return $this->radio_configuration_profile;
+    }
+    public function getTypeAttribute()
+    {
+        return 'internal';
+    }
+    protected static function booted()
+    {
+        static::deleting(function($radio) {
+            // Delete all likes, follows, and comments associated with the radio.
+            $radio->likes()->delete();
+            $radio->follows()->delete();
+            $radio->comments()->delete();
+            
+            // For a many-to-many relationship like listeners(), detach instead of delete.
+            $radio->listeners()->detach();
+        });
+    }
 }

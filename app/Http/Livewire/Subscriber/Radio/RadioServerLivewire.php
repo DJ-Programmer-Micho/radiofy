@@ -2,7 +2,6 @@
 
 namespace App\Http\Livewire\Subscriber\Radio;
 
-
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Models\RadioConfiguration;
@@ -21,12 +20,10 @@ class RadioServerLivewire extends Component
     public function mount($radio_id)
     {
         $this->radio_id = $radio_id;
-        // Load main configuration record
         $config = RadioConfiguration::find($this->radio_id);
         if ($config) {
             $this->radioName = $config->radio_name;
             $this->radioNameSlug = $config->radio_name_slug;
-            // Remove the domain part for display purposes.
             if ($config->source) {
                 $this->source = preg_replace('/@.*$/', '', $config->source);
             }
@@ -46,21 +43,16 @@ class RadioServerLivewire extends Component
     {
         $validatedData = $this->validate();
         
-        // Ensure the source ends with "@mradiofy"
         $target = 'mradiofy';
-        // If an "@" is found at the end of the source, check the domain
         if (preg_match('/@(\S+)$/', $validatedData['source'], $matches)) {
             $domain = strtolower($matches[1]);
             if ($domain !== $target && levenshtein($domain, $target) <= 2) {
-                // Replace the incorrect domain with the target
                 $validatedData['source'] = preg_replace('/@\S+$/', '@' . $target, $validatedData['source']);
             }
         } else {
-            // If no "@" is present, append the target domain.
             $validatedData['source'] .= '@' . $target;
         }
         
-        // Load the main configuration record
         $config = RadioConfiguration::find($this->radio_id);
         if (!$config) {
             $this->dispatchBrowserEvent('alert', [

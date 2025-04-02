@@ -14,22 +14,24 @@
                         <!-- Priority -->
                         <div class="col-md-4">
                             <label for="priority">{{ __('Priority') }}</label>
-                            <input type="number" class="form-control @error('priority') is-invalid @enderror" wire:model="priority" placeholder="Priority">
-                            @error('priority')<span class="text-danger">{{ __($message) }}</span>@enderror
+                            <input type="number" 
+                                   class="form-control @error('priority') is-invalid @enderror @if(!$errors->has('priority') && !empty($priority)) is-valid @endif" 
+                                   wire:model="priority" placeholder="Priority">
+                            @error('priority')
+                                <span class="text-danger">{{ __($message) }}</span>
+                            @enderror
                         </div>
                         <!-- Status -->
                         <div class="col-md-4">
                             <label for="status">{{ __('Status') }}</label>
-                            <select class="form-control @error('status') is-invalid @enderror" wire:model="status">
+                            <select class="form-control @error('status') is-invalid @enderror @if(!$errors->has('status') && $status !== null) is-valid @endif" 
+                                    wire:model="status">
                                 <option value="1">{{ __('Active') }}</option>
                                 <option value="0">{{ __('Non-active') }}</option>
                             </select>
-                            @error('status')<span class="text-danger">{{ __($message) }}</span>@enderror
-                        </div>
-                        <!-- Image Upload with FilePond -->
-                        <div class="col-md-4" wire:ignore>
-                            <input type="file" id="addFilepond" class="filepond" name="file" accept="image/png, image/jpeg, image/jpg, image/svg"/>
-                            @error('objectName')<span class="text-danger">{{ __($message) }}</span>@enderror
+                            @error('status')
+                                <span class="text-danger">{{ __($message) }}</span>
+                            @enderror
                         </div>
                     </div>
                     <hr class="bg-light">
@@ -37,14 +39,38 @@
                         @foreach($filteredLocales as $locale)
                         <div class="col-md-4">
                             <div class="mb-3">
-                                <label for="genre_{{ $locale }}">{{ __('Genre') }} ({{ strtoupper($locale) }})</label>
-                                <input type="text" class="form-control @error('genres.' . $locale) is-invalid @enderror" wire:model="genres.{{ $locale }}" placeholder="{{ __('Enter genre name') }}">
+                                <label for="genres.{{ $locale }}">{{ __('Genre') }} ({{ strtoupper($locale) }})</label>
+                                <input type="text" 
+                                       class="form-control @error('genres.' . $locale) is-invalid @enderror @if(!$errors->has('genres.' . $locale) && !empty($genres[$locale] ?? '')) is-valid @endif" 
+                                       wire:model="genres.{{ $locale }}" 
+                                       placeholder="{{ __('Enter genre name') }}">
                                 @error('genres.' . $locale)
                                     <span class="text-danger">{{ __($message) }}</span>
                                 @enderror
                             </div>
                         </div>
                         @endforeach
+                    </div>
+                    <hr class="bg-light">
+                    <div class="row">
+                        <!-- Image Upload with FilePond -->
+                        <div class="col-12 col-md-8 col-lg-8 mt-3" wire:ignore>
+                            <input type="file" id="addFilepond" 
+                                    class="filepond @error('objectName') is-invalid @enderror @if(!$errors->has('objectName') && !empty($objectName)) is-valid @endif" 
+                                    name="file" accept="image/png, image/jpeg, image/jpg, image/svg"/>
+                            @error('objectName')
+                                <span class="text-danger">{{ __($message) }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="col-12 col-md-4 col-lg-4 mt-3" wire:ignore>
+                            <input type="file" id="addFilepond_sq" 
+                                    class="filepond @error('objectNameSq') is-invalid @enderror @if(!$errors->has('objectNameSq') && !empty($objectNameSq)) is-valid @endif" 
+                                    name="file_sq" accept="image/png, image/jpeg, image/jpg, image/svg"/>
+                            @error('objectNameSq')
+                                <span class="text-danger">{{ __($message) }}</span>
+                            @enderror
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -56,7 +82,7 @@
     </div>
 </div>
 
-<!-- Add Genre Modal -->
+<!-- Update Genre Modal -->
 <div wire:ignore.self class="modal fade" id="updateGenreModal" tabindex="-1" aria-labelledby="updateGenreModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content bg-dark text-white">
@@ -72,22 +98,24 @@
                         <!-- Priority -->
                         <div class="col-md-4">
                             <label for="priority">{{ __('Priority') }}</label>
-                            <input type="number" class="form-control @error('priority') is-invalid @enderror" wire:model="priority" placeholder="Priority">
-                            @error('priority')<span class="text-danger">{{ __($message) }}</span>@enderror
+                            <input type="number" 
+                                   class="form-control @error('priority') is-invalid @enderror @if(!$errors->has('priority') && !empty($priority)) is-valid @endif" 
+                                   wire:model="priority" placeholder="Priority">
+                            @error('priority')
+                                <span class="text-danger">{{ __($message) }}</span>
+                            @enderror
                         </div>
                         <!-- Status -->
                         <div class="col-md-4">
                             <label for="status">{{ __('Status') }}</label>
-                            <select class="form-control @error('status') is-invalid @enderror" wire:model="status">
+                            <select class="form-control @error('status') is-invalid @enderror @if(!$errors->has('status') && $status !== null) is-valid @endif" 
+                                    wire:model="status">
                                 <option value="1">{{ __('Active') }}</option>
                                 <option value="0">{{ __('Non-active') }}</option>
                             </select>
-                            @error('status')<span class="text-danger">{{ __($message) }}</span>@enderror
-                        </div>
-                        <!-- Image Upload with FilePond -->
-                        <div class="col-md-4" wire:ignore>
-                            <input type="file" id="updateFilepond" class="filepond" name="file" accept="image/png, image/jpeg, image/jpg, image/svg"/>
-                            @error('objectName')<span class="text-danger">{{ __($message) }}</span>@enderror
+                            @error('status')
+                                <span class="text-danger">{{ __($message) }}</span>
+                            @enderror
                         </div>
                     </div>
                     <hr class="bg-light">
@@ -95,14 +123,36 @@
                         @foreach($filteredLocales as $locale)
                         <div class="col-md-4">
                             <div class="mb-3">
-                                <label for="genre_{{ $locale }}">{{ __('Genre') }} ({{ strtoupper($locale) }})</label>
-                                <input type="text" class="form-control @error('genres.' . $locale) is-invalid @enderror" wire:model="genres.{{ $locale }}" placeholder="{{ __('Enter genre name') }}">
+                                <label for="genres.{{ $locale }}">{{ __('Genre') }} ({{ strtoupper($locale) }})</label>
+                                <input type="text" 
+                                       class="form-control @error('genres.' . $locale) is-invalid @enderror @if(!$errors->has('genres.' . $locale) && !empty($genres[$locale] ?? '')) is-valid @endif" 
+                                       wire:model="genres.{{ $locale }}" 
+                                       placeholder="{{ __('Enter genre name') }}">
                                 @error('genres.' . $locale)
                                     <span class="text-danger">{{ __($message) }}</span>
                                 @enderror
                             </div>
                         </div>
                         @endforeach
+                    </div>
+                    <hr class="bg-light">
+                    <div class="row">
+                        <div class="col-12 col-md-8 col-lg-8 mt-3" wire:ignore>
+                            <input type="file" id="updateFilepond" 
+                                    class="filepond @error('objectName') is-invalid @enderror @if(!$errors->has('objectName') && !empty($objectName)) is-valid @endif" 
+                                    name="file" accept="image/png, image/jpeg, image/jpg, image/svg"/>
+                            @error('objectName')
+                                <span class="text-danger">{{ __($message) }}</span>
+                            @enderror
+                        </div>
+                        <div class="col-12 col-md-4 col-lg-4 mt-3" wire:ignore>
+                            <input type="file" id="updateFilepond_sq" 
+                                    class="filepond @error('objectNameSq') is-invalid @enderror @if(!$errors->has('objectNameSq') && !empty($objectNameSq)) is-valid @endif" 
+                                    name="file_sq" accept="image/png, image/jpeg, image/jpg, image/svg"/>
+                            @error('objectNameSq')
+                                <span class="text-danger">{{ __($message) }}</span>
+                            @enderror
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -113,6 +163,7 @@
         </div>
     </div>
 </div>
+
 
 <div wire:ignore.self class="modal fade" id="deleteGenreModal" tabindex="-1" aria-labelledby="deleteGenreModalLabel" aria-hidden="true">
     <div class="modal-dialog text-white">
@@ -170,16 +221,16 @@
         FilePondPluginImageTransform 
     );
 
-    // Initialize FilePond for Add Modal with cropping enabled
+    // Initialize FilePond for the Landscape Image in Add Modal
     const addPond = FilePond.create(document.querySelector('#addFilepond'), {
         fileParameterName: 'file',
         labelIdle: `Drag & Drop your picture or <span class="filepond--label-action">Browse</span>`,
-        imagePreviewHeight: 150,
-        imageCropAspectRatio: '1:1',
+        imagePreviewHeight: 100,
+        imageCropAspectRatio: '5:2',
         imageCropAutoCropArea: 1,
-        allowImageCrop: true, // Enable cropping
-        imageResizeTargetWidth: 500,
-        imageResizeTargetHeight: 500,
+        allowImageCrop: true,
+        imageResizeTargetWidth: 250,
+        imageResizeTargetHeight: 100,
         allowImageResize: true,
         imageResizeMode: 'cover',
         allowImageTransform: true,
@@ -187,26 +238,71 @@
         styleProgressIndicatorPosition: 'right bottom',
         styleButtonRemoveItemPosition: 'left bottom',
         styleButtonProcessItemPosition: 'right bottom',
-        imageTransformOutputQuality: 90,
+        imageTransformOutputQuality: 100,
         maxFileSize: '2MB',
         labelMaxFileSizeExceeded: 'File is too large',
         labelMaxFileSize: 'Maximum file size is {filesize}'
     });
 
-    // Initialize FilePond for Update Modal
+    // Initialize FilePond for the Square Image (1:1) in Add Modal
+    const addPondSq = FilePond.create(document.querySelector('#addFilepond_sq'), {
+        fileParameterName: 'file_sq',
+        labelIdle: `Drag & Drop your square image or <span class="filepond--label-action">Browse</span>`,
+        imagePreviewHeight: 100,
+        imageCropAspectRatio: '1:1',
+        imageCropAutoCropArea: 1,
+        allowImageCrop: true,
+        imageResizeTargetWidth: 250,
+        imageResizeTargetHeight: 250,
+        allowImageResize: true,
+        imageResizeMode: 'cover',
+        allowImageTransform: true,
+        styleLoadIndicatorPosition: 'center bottom',
+        styleProgressIndicatorPosition: 'right bottom',
+        styleButtonRemoveItemPosition: 'left bottom',
+        styleButtonProcessItemPosition: 'right bottom',
+        imageTransformOutputQuality: 100,
+        maxFileSize: '2MB',
+        labelMaxFileSizeExceeded: 'File is too large',
+        labelMaxFileSize: 'Maximum file size is {filesize}'
+    });
+
+    // Initialize FilePond for the Landscape Image in Update Modal
     const updatePond = FilePond.create(document.querySelector('#updateFilepond'), {
         fileParameterName: 'file',
         labelIdle: `Drag & Drop your picture or <span class="filepond--label-action">Browse</span>`,
-        imagePreviewHeight: 150,
-        imageCropAspectRatio: '1:1',
-        imageTransformOutputQuality: 90,
+        imagePreviewHeight: 100,
+        imageCropAspectRatio: '5:2',
         imageCropAutoCropArea: 1,
-        allowImageCrop: true, // Enable cropping
-        imageResizeTargetWidth: 500,
-        imageResizeTargetHeight: 500,
+        allowImageCrop: true,
+        imageResizeTargetWidth: 250,
+        imageResizeTargetHeight: 100,
         allowImageResize: true,
-        allowImageTransform: true,
         imageResizeMode: 'cover',
+        allowImageTransform: true,
+        styleLoadIndicatorPosition: 'center bottom',
+        styleProgressIndicatorPosition: 'right bottom',
+        styleButtonRemoveItemPosition: 'left bottom',
+        styleButtonProcessItemPosition: 'right bottom',
+        imageTransformOutputQuality: 100,
+        maxFileSize: '2MB',
+        labelMaxFileSizeExceeded: 'File is too large',
+        labelMaxFileSize: 'Maximum file size is {filesize}'
+    });
+
+    // Initialize FilePond for the Square Image (1:1) in Update Modal
+    const updatePondSq = FilePond.create(document.querySelector('#updateFilepond_sq'), {
+        fileParameterName: 'file_sq',
+        labelIdle: `Drag & Drop your square image or <span class="filepond--label-action">Browse</span>`,
+        imagePreviewHeight: 100,
+        imageCropAspectRatio: '1:1',
+        imageCropAutoCropArea: 1,
+        allowImageCrop: true,
+        imageResizeTargetWidth: 250,
+        imageResizeTargetHeight: 250,
+        allowImageResize: true,
+        imageResizeMode: 'cover',
+        allowImageTransform: true,
         styleLoadIndicatorPosition: 'center bottom',
         styleProgressIndicatorPosition: 'right bottom',
         styleButtonRemoveItemPosition: 'left bottom',
@@ -216,7 +312,7 @@
         labelMaxFileSize: 'Maximum file size is {filesize}'
     });
 
-    // Set up server options for both instances
+    // Set up server options for all FilePond instances
     const serverOptions = {
         process: {
             url: '{{ route("filepond.upload") }}',
@@ -248,15 +344,53 @@
         }
     };
 
-    addPond.setOptions({ server: serverOptions });
-    updatePond.setOptions({ server: serverOptions });
+    const serverOptionsSq = {
+        process: {
+            url: '{{ route("filepond.upload") }}',
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            onload: (response) => {
+                const cleanedResponse = response.replace(/^"|"$/g, '');
+                Livewire.emit('fileUploadedSq', cleanedResponse);
+                return cleanedResponse;
+            },
+            onerror: (response) => {
+                console.error(response);
+            }
+        },
+        revert: (uniqueFileId, load, error) => {
+            fetch('{{ route("filepond.revert") }}', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ file: uniqueFileId })
+            })
+            .then(response => response.json())
+            .then(() => load())
+            .catch(err => error('Error deleting file'));
+        }
+    };
 
-    // Listen for event to preload the update image
+
+    addPond.setOptions({ server: serverOptions });
+    addPondSq.setOptions({ server: serverOptionsSq });
+    updatePond.setOptions({ server: serverOptions });
+    updatePondSq.setOptions({ server: serverOptionsSq  });
+
+    // Listen for events to preload images when updating (optional)
     window.addEventListener('setFilePondFile', event => {
         const fileUrl = event.detail.file;
         updatePond.removeFiles(); // Clear existing file(s)
         updatePond.addFile(fileUrl);
     });
+    window.addEventListener('setFilePondFileSq', event => {
+        const fileUrl = event.detail.file;
+        updatePondSq.removeFiles(); // Clear existing file(s)
+        updatePondSq.addFile(fileUrl);
+    });
 </script>
 @endpush
-

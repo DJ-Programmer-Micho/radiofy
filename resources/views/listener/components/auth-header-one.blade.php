@@ -13,7 +13,7 @@
         <div class="col-lg-12">
             <div class="text-center mt-sm-5 mb-4 text-white-50">
                 <div>
-                    <a href="index.html" class="d-inline-block auth-logo">
+                    <a href="#" class="d-inline-block auth-logo">
                         <img src="{{ app('app-icon-width') }}" alt="Mradiofy" height="60">
                     </a>
                 </div>

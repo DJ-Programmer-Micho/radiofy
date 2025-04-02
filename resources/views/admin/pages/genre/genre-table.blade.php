@@ -65,6 +65,7 @@
                                     <thead>
                                         <tr>
                                             <th class="text-center">{{ __('ID') }}</th>
+                                            <th class="text-center">{{ __('Image (1:1)') }}</th>
                                             <th class="text-center">{{ __('Image') }}</th>
                                             <th class="text-center">{{ __('Genre') }}</th>
                                             <th class="text-center">{{ __('Priority') }}</th>
@@ -78,7 +79,14 @@
                                             <td class="align-middle text-center">{{ $index + 1 }}</td>
                                             <td class="align-middle text-center">
                                                 @if($data->image)
-                                                    <img src="{{ asset('storage/' .$data->image) }}" alt="Image Preview" style="max-width:50px; max-height:50px;">
+                                                    <img src="{{ asset('storage/' .$data->image_sq) }}" alt="Image Preview" style="max-width:80px;">
+                                                @else
+                                                    <span>{{ __('No Image') }}</span>
+                                                @endif
+                                            </td>
+                                            <td class="align-middle text-center">
+                                                @if($data->image)
+                                                    <img src="{{ asset('storage/' .$data->image) }}" alt="Image Preview" style="max-width:250px;">
                                                 @else
                                                     <span>{{ __('No Image') }}</span>
                                                 @endif

@@ -66,6 +66,11 @@
                                             <th class="text-center">{{ __('ID') }}</th>
                                             <th class="text-center">{{ __('Bitrate') }}</th>
                                             <th class="text-center">{{ __('Max-Listeners') }}</th>
+                                            <th class="text-center">{{ __('Monthly Sell') }}</th>
+                                            <th class="text-center">{{ __('Yearly Sell') }}</th>
+                                            <th class="text-center">{{ __('Support') }}</th>
+                                            <th class="text-center">{{ __('Ribbon') }}</th>
+                                            <th class="text-center">{{ __('Ribbon Text') }}</th>
                                             <th class="text-center">{{ __('Status') }}</th>
                                             <th class="text-center">{{ __('Priority') }}</th>
                                             <th class="text-center">{{ __('Action') }}</th>
@@ -82,8 +87,27 @@
                                                 {{ $data->max_listeners }}
                                             </td>
                                             <td class="align-middle text-center">
+                                                ${{ number_format($data->sell_price_monthly,2) }}
+                                            </td>
+                                            <td class="align-middle text-center">
+                                                ${{ number_format($data->sell_price_yearly,2) }}
+                                            </td>
+                                            <td class="align-middle text-center">
+                                                <span class="badge {{ $data->support ? 'bg-success' : 'bg-danger' }} p-2" style="font-size: 0.7rem;">
+                                                    {{ $data->status ? __('Supported') : __('Not Supported') }}
+                                                </span>
+                                            </td>
+                                            <td class="align-middle text-center">
+                                                <span class="badge {{ $data->ribbon ? 'bg-success' : 'bg-danger' }} p-2" style="font-size: 0.7rem;">
+                                                    {{ $data->status ? __('Showing') : __('Not Showing') }}
+                                                </span>
+                                            </td>
+                                            <td class="align-middle text-center">
+                                                {{ $data->rib_text ?? '-' }}
+                                            </td>
+                                            <td class="align-middle text-center">
                                                 <span class="badge {{ $data->status ? 'bg-success' : 'bg-danger' }} p-2" style="font-size: 0.7rem;">
-                                                    {{ $data->status ? __('Active') : __('Non-active') }}
+                                                    {{ $data->status ? __('Available') : __('Not Available') }}
                                                 </span>
                                             </td>
                                             <td class="align-middle text-center">

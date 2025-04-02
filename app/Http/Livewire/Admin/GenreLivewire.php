@@ -23,7 +23,8 @@ class GenreLivewire extends Component
     public $genreId;
     public $priority;
     public $status = 1;
-    public $objectName; // Will store the file path returned from FilePond
+    public $objectName;   // Landscape image file path
+    public $objectNameSq; // Square image file path
 
     // Translation fields (one per locale)
     public $genres = []; // e.g., ['en' => 'Pop', 'ar' => 'بوب', 'ku' => 'Pop']
@@ -39,8 +40,8 @@ class GenreLivewire extends Component
     public $deleteGenreId;
     public $genreNameToDelete = '';
 
-    // Listen for the FilePond upload event
-    protected $listeners = ['fileUploaded'];
+    // Listen for FilePond upload events for both images
+    protected $listeners = ['fileUploaded', 'fileUploadedSq'];
 
     public function mount()
     {
@@ -57,7 +58,6 @@ class GenreLivewire extends Component
         $this->emitSelf('refresh');
     }
 
-    // Rules for saving a new Genre
     protected function rulesForSave()
     {
         $rules = [];
@@ -66,16 +66,25 @@ class GenreLivewire extends Component
                 'required',
                 'string',
                 'min:1',
-                Rule::unique('genre_translations', 'name')->where('locale', $locale)
+                Rule::unique('genre_translations', 'name')->where('locale', $locale),
+                // Ensure uniqueness across locales in the form
+                function ($attribute, $value, $fail) use ($locale) {
+                    $occurrences = collect($this->genres)->filter(function ($v) use ($value) {
+                        return $v === $value;
+                    })->count();
+                    if ($occurrences > 1) {
+                        $fail("The genre name '$value' must be unique across locales.");
+                    }
+                }
             ];
         }
         $rules['priority'] = ['required', 'integer'];
         $rules['status'] = ['required', 'in:0,1'];
         $rules['objectName'] = ['required', 'string'];
+        $rules['objectNameSq'] = ['required', 'string'];
         return $rules;
     }
 
-    // Rules for updating an existing Genre
     protected function rulesForUpdate()
     {
         $rules = [];
@@ -86,48 +95,79 @@ class GenreLivewire extends Component
                 'min:1',
                 Rule::unique('genre_translations', 'name')
                     ->where('locale', $locale)
-                    ->ignore($this->genreId, 'genre_id')
+                    ->ignore($this->genreId, 'genre_id'),
+                // Custom rule for uniqueness among the form inputs
+                function ($attribute, $value, $fail) use ($locale) {
+                    $occurrences = collect($this->genres)->filter(function ($v) use ($value) {
+                        return $v === $value;
+                    })->count();
+                    if ($occurrences > 1) {
+                        $fail("The genre name '$value' must be unique across locales.");
+                    }
+                }
             ];
         }
         $rules['priority'] = ['required', 'integer'];
         $rules['status'] = ['required', 'in:0,1'];
         $rules['objectName'] = ['required', 'string'];
+        $rules['objectNameSq'] = ['required', 'string'];
         return $rules;
+    }
+
+    public function updated($propertyName)
+    {
+        $rules = $this->genreId ? $this->rulesForUpdate() : $this->rulesForSave();
+        $this->validateOnly($propertyName, $rules);
     }
 
     // Saving a new genre
     public function saveGenre()
     {
-        $validatedData = $this->validate($this->rulesForSave());
+        try {
+            $validatedData = $this->validate($this->rulesForSave());
+
+            // Move landscape image from temporary to permanent storage
+            if (strpos($this->objectName, 'tmp/genre') === 0) {
+                $newPath = str_replace('tmp/genre', 'genre', $this->objectName);
+                Storage::disk('public')->move($this->objectName, $newPath);
+                $this->objectName = $newPath;
+            }
     
-        // If file is in temporary storage, move it to permanent storage
-        if (strpos($this->objectName, 'tmp/genre') === 0) {
-            $newPath = str_replace('tmp/genre', 'genre', $this->objectName);
-            Storage::disk('public')->move($this->objectName, $newPath);
-            $this->objectName = $newPath;
-        }
+            // Move square image from temporary to permanent storage
+            if (strpos($this->objectNameSq, 'tmp/genre') === 0) {
+                $newPathSq = str_replace('tmp/genre', 'genre', $this->objectNameSq);
+                Storage::disk('public')->move($this->objectNameSq, $newPathSq);
+                $this->objectNameSq = $newPathSq;
+            }
     
-        $genre = Genre::create([
-            'priority' => $validatedData['priority'],
-            'status'   => $validatedData['status'],
-            'image'    => $this->objectName,
-        ]);
+            $genre = Genre::create([
+                'priority' => $validatedData['priority'],
+                'status'   => $validatedData['status'],
+                'image'    => $this->objectName,
+                'image_sq' => $this->objectNameSq,
+            ]);
     
-        foreach ($this->filteredLocales as $locale) {
-            GenreTranslater::create([
-                'genre_id' => $genre->id,
-                'locale'   => $locale,
-                'name'     => $this->genres[$locale],
-                'slug'     => Str::slug($this->genres[$locale], '-', ''),
+            foreach ($this->filteredLocales as $locale) {
+                GenreTranslater::create([
+                    'genre_id' => $genre->id,
+                    'locale'   => $locale,
+                    'name'     => $this->genres[$locale],
+                    'slug'     => Str::slug($this->genres[$locale], '-', ''),
+                ]);
+            }
+    
+            $this->resetInput();
+            $this->closeModal();
+            $this->dispatchBrowserEvent('alert', [
+                'type' => 'success',
+                'message' => __('New Genre Added Successfully')
+            ]);
+        } catch (\Exception $e) {
+            $this->dispatchBrowserEvent('alert', [
+                'type' => 'error',
+                'message' => __('Err: '. $e)
             ]);
         }
-    
-        $this->resetInput();
-        $this->closeModal();
-        $this->dispatchBrowserEvent('alert', [
-            'type' => 'success',
-            'message' => __('New Genre Added Successfully')
-        ]);
     }
 
     // Editing an existing genre
@@ -137,44 +177,61 @@ class GenreLivewire extends Component
         $this->genreId = $genre->id;
         $this->priority = $genre->priority;
         $this->status = $genre->status;
-        $this->objectName = $genre->image; // e.g., "genre/somefile.png"
+        $this->objectName = $genre->image;
+        $this->objectNameSq = $genre->image_sq;
         foreach ($this->filteredLocales as $locale) {
             $translation = $genre->genreTranslation()->where('locale', $locale)->first();
             $this->genres[$locale] = $translation ? $translation->name : '';
         }
-        // Dispatch event to preload FilePond in update modal with the existing image.
+        // Dispatch event to preload FilePond in update modal with the existing landscape image.
         $fileUrl = asset('storage/' . $this->objectName);
         $this->dispatchBrowserEvent('setFilePondFile', ['file' => $fileUrl]);
+
+        // Dispatch event to preload FilePond in update modal with the existing square image.
+        $fileUrlSq = asset('storage/' . $this->objectNameSq);
+        $this->dispatchBrowserEvent('setFilePondFileSq', ['file' => $fileUrlSq]);
     }
-    
+
     // Updating an existing genre
     public function updateGenre()
     {
         $validatedData = $this->validate($this->rulesForUpdate());
-    
-        // If a new file is uploaded from tmp, move it to permanent storage
+
+        // Update landscape image if a new file is uploaded
         if (strpos($this->objectName, 'tmp/genre') === 0) {
             $newPath = str_replace('tmp/genre', 'genre', $this->objectName);
             Storage::disk('public')->move($this->objectName, $newPath);
-            $this->objectName = $newPath;
-        }
-    
-        if ($this->genreId) {
-            $genre = Genre::findOrFail($this->genreId);
-            // If a new image was uploaded and it's different from the old image,
-            // remove the old image from storage.
-            if ($this->objectName && $this->objectName !== $genre->image) {
-                if ($genre->image && Storage::disk('public')->exists($genre->image)) {
+            if ($this->genreId) {
+                $genre = Genre::findOrFail($this->genreId);
+                if ($genre->image && $genre->image !== $newPath && Storage::disk('public')->exists($genre->image)) {
                     Storage::disk('public')->delete($genre->image);
                 }
             }
-    
+            $this->objectName = $newPath;
+        }
+
+        // Update square image if a new file is uploaded
+        if (strpos($this->objectNameSq, 'tmp/genre') === 0) {
+            $newPathSq = str_replace('tmp/genre', 'genre', $this->objectNameSq);
+            Storage::disk('public')->move($this->objectNameSq, $newPathSq);
+            if ($this->genreId) {
+                $genre = Genre::findOrFail($this->genreId);
+                if ($genre->image_sq && $genre->image_sq !== $newPathSq && Storage::disk('public')->exists($genre->image_sq)) {
+                    Storage::disk('public')->delete($genre->image_sq);
+                }
+            }
+            $this->objectNameSq = $newPathSq;
+        }
+
+        if ($this->genreId) {
+            $genre = Genre::findOrFail($this->genreId);
             $genre->update([
                 'priority' => $validatedData['priority'],
                 'status'   => $validatedData['status'],
                 'image'    => $this->objectName,
+                'image_sq' => $this->objectNameSq,
             ]);
-    
+
             foreach ($this->filteredLocales as $locale) {
                 $translation = $genre->genreTranslation()->where('locale', $locale)->first();
                 if ($translation) {
@@ -191,7 +248,7 @@ class GenreLivewire extends Component
                     ]);
                 }
             }
-    
+
             $this->resetInput();
             $this->closeModal();
             $this->dispatchBrowserEvent('alert', [
@@ -207,7 +264,7 @@ class GenreLivewire extends Component
         $this->genreNameToDelete = '';
     }
 
-    // Delete the genre record and its image if confirmation text matches.
+    // Delete the genre and remove its images
     public function destroyGenre()
     {
         if ($this->genreNameToDelete !== 'DELETE GENRE') {
@@ -215,10 +272,11 @@ class GenreLivewire extends Component
         }
 
         $genre = Genre::findOrFail($this->deleteGenreId);
-        
-        // Delete the image from storage if it exists.
         if ($genre->image && Storage::disk('public')->exists($genre->image)) {
             Storage::disk('public')->delete($genre->image);
+        }
+        if ($genre->image_sq && Storage::disk('public')->exists($genre->image_sq)) {
+            Storage::disk('public')->delete($genre->image_sq);
         }
         
         $genre->delete();
@@ -229,26 +287,21 @@ class GenreLivewire extends Component
         ]);
         $this->resetInput();
         $this->closeModal();
-        $this->closeDeleteModal();
     }
 
     public function updateStatus(int $id)
     {
-        // Find the brand by ID, if not found return an error
         $dataStatus = Genre::find($id);
-    
+
         if ($dataStatus) {
-            // Toggle the status (0 to 1 and 1 to 0)
             $dataStatus->status = !$dataStatus->status;
             $dataStatus->save();
-    
-            // Dispatch a browser event to show success message
+
             $this->dispatchBrowserEvent('alert', [
                 'type' => 'success',
                 'message' => __('Status Updated Successfully')
             ]);
         } else {
-            // Dispatch a browser event to show error message
             $this->dispatchBrowserEvent('alert', [
                 'type' => 'error',
                 'message' => __('Record Not Found')
@@ -258,7 +311,6 @@ class GenreLivewire extends Component
 
     public function updatePriority(int $p_id, $updatedPriority)
     {
-        // Validate if updatedPriority is a number
         if (!is_numeric($updatedPriority)) {
             $this->dispatchBrowserEvent('alert', [
                 'type' => 'error',  
@@ -266,10 +318,8 @@ class GenreLivewire extends Component
             ]);
             return;
         }
-    
-        // Find the brand by ID
+
         $brand = Genre::find($p_id);
-        
         if ($brand) {
             $brand->priority = $updatedPriority;
             $brand->save();
@@ -288,13 +338,17 @@ class GenreLivewire extends Component
     
     public function resetInput()
     {
-        // Delete temporary file for this user if exists.
+        // Delete any temporary files if they exist.
         if ($this->objectName && strpos($this->objectName, 'tmp/genre') === 0) {
             Storage::disk('public')->delete($this->objectName);
+        }
+        if ($this->objectNameSq && strpos($this->objectNameSq, 'tmp/genre') === 0) {
+            Storage::disk('public')->delete($this->objectNameSq);
         }
         $this->genreId = null;
         $this->status = 1;
         $this->objectName = null;
+        $this->objectNameSq = null;
         $this->genres = [];
         $this->priority = Genre::max('priority') + 1;
         $this->deleteGenreId = null;
@@ -337,14 +391,20 @@ class GenreLivewire extends Component
     
     public function fileUploaded($serverId)
     {
-        // Remove extra quotes if present
         $cleaned = trim($serverId, '"');
-    
-        // If there is an existing temporary file and it's different, remove it.
         if ($this->objectName && $this->objectName !== $cleaned && strpos($this->objectName, 'tmp/genre') === 0) {
             Storage::disk('public')->delete($this->objectName);
         }
-        
         $this->objectName = $cleaned;
     }
+
+    public function fileUploadedSq($serverId)
+    {
+        $cleaned = trim($serverId, '"');
+        if ($this->objectNameSq && $this->objectNameSq !== $cleaned && strpos($this->objectNameSq, 'tmp/genre') === 0) {
+            Storage::disk('public')->delete($this->objectNameSq);
+        }
+        $this->objectNameSq = $cleaned;
+    }
+    
 }

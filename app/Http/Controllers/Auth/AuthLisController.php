@@ -13,34 +13,33 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthLisController extends Controller
 {
-    /**
-     * Show the listener sign in form.
-     */
+    public function signUp()
+    {
+        return view('listener.auth.register.index'); 
+    }
+
     public function signIn()
     {
         return view('listener.auth.signin-one');
     }
-    /**
-     * Process the listener sign in request.
-     */
+
     public function handleSignIn(Request $request)
     { 
-        // dd($request->all());
         $request->validate([
             'login' => 'required|string',
-            'password' => 'required|string|min:8',
+            'password' => 'required|string|min:6',
             // 'g-recaptcha-response' => ['required', new ReCaptcha]
         ]);
-    
+        
         // Map form field names to the correct database column names
         $loginType = filter_var($request->input('login'), FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
-
+        
+        // dd($request->all());
         $credentials = [
             $loginType => $request->input('login'),
             'password' => $request->input('password'),
         ];
     
-
         if (Auth::guard('listener')->attempt($credentials)) {
             // Authentication successful
             return redirect()->route('listener.home', ['locale' => app()->getLocale()]); // Adjust the route as needed
@@ -52,18 +51,15 @@ class AuthLisController extends Controller
         ])->withInput();
     }
 
-    /**
-     * Show the registration wizard form.
-     */
-    public function signUp()
+    public function forgetPassword()
     {
-        return view('listener.auth.register.index'); // Blade view for the registration wizard
+        return view('listener.auth.forget.index'); 
+    }
+    public function newPassword()
+    {
+        return view('listener.auth.password.index'); 
     }
 
-
-    /**
-     * Log out the listener.
-     */
     public function signOut()
     {
         Auth::guard('listener')->logout();
