@@ -186,13 +186,13 @@ class RadioLivewire extends Component
         // Build the configuration payload.
         // We hardcode the Icecast port (8000) here.
         $config = [
-            'source_url' => app('server_ip').':'.app('server_post')."{$sourceMount}",  // e.g., http://192.168.0.113:8000/source_radio_one1
+            'source_url' => (string) app('server_ip').':'.app('server_post')."{$sourceMount}",  // e.g., http:///source_radio_one1
             'mount'      => $mountName,  // e.g., /radio_one1
             'bitrate'    => $bitrate,
             'source'     => $radio->source,
             'password'   => $radio->source_password,
             'host'       => (string) app('server_ip'),
-            'port'       => 8000,
+            'port'       => (string) app('server_post'),
         ];
         
         // Define the Python service URL.
