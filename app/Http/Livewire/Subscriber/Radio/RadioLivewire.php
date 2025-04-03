@@ -223,10 +223,10 @@ class RadioLivewire extends Component
             'bitrate'    => $bitrate,
             'source'     => $radio->source,
             'password'   => $radio->source_password,
-            'host'       => (string) app('server_ip'),
+            'host'       => (string) app('server_ip_no'),
             'port'       => (string) app('server_post'),
         ];
-        $pythonServiceUrl = app('server_ip').':5000/update_radio_config';
+        $pythonServiceUrl = (string) app('server_ip').':5000/update_radio_config';
 
         try {
             $client = new Client();
@@ -277,45 +277,56 @@ class RadioLivewire extends Component
             ->with('plan')
             ->get();
     
-        foreach ($configs as $config) {
-            $ingestionMount = $dom->createElement('mount');
-            $ingestionMount->setAttribute('type', 'normal');
-            $ingestionMountName = $dom->createElement('mount-name', '/source_' . $config->radio_name_slug);
-            $ingestionMount->appendChild($ingestionMountName);
-            $ingestionUsername = $dom->createElement('username', $config->source);
-            $ingestionMount->appendChild($ingestionUsername);
-            $ingestionPassword = $dom->createElement('password', $config->source_password);
-            $ingestionMount->appendChild($ingestionPassword);
-            $ingestionMaxListeners = $dom->createElement('max-listeners', 5);
-            $ingestionMount->appendChild($ingestionMaxListeners);
-            $parentNode->appendChild($ingestionMount);
+            foreach ($configs as $config) {
+            
+                // Ingestion mount for this radio.
+                $ingestionMount = $dom->createElement('mount');
+                $ingestionMount->setAttribute('type', 'normal');
+                $ingestionMountName = $dom->createElement('mount-name', '/source_' . $config->radio_name_slug);
+                $ingestionMount->appendChild($ingestionMountName);
+                $ingestionUsername = $dom->createElement('username', $config->source);
+                $ingestionMount->appendChild($ingestionUsername);
+                // Use the proper field name (lowercase) for password.
+                $ingestionPassword = $dom->createElement('password', $config->source_password);
+                $ingestionMount->appendChild($ingestionPassword);
+                $ingestionMaxListeners = $dom->createElement('max-listeners', 5);
+                $ingestionMount->appendChild($ingestionMaxListeners);
+                $parentNode->appendChild($ingestionMount);
+        
+                // Listener mount for this radio.
+                $listenerMount = $dom->createElement('mount');
+                $listenerMount->setAttribute('type', 'normal');
+                $listenerMountName = $dom->createElement('mount-name', '/' . $config->radio_name_slug);
+                $listenerMount->appendChild($listenerMountName);
+                // Use the same source and password as ingestion mount.
+                $listenerRadio = $dom->createElement('radio-id', $config->id);
+                $listenerMount->appendChild($listenerRadio);
+                $listenerUsername = $dom->createElement('username', $config->source);
+                $listenerMount->appendChild($listenerUsername);
+                $listenerPassword = $dom->createElement('password', $config->source_password);
+                $listenerMount->appendChild($listenerPassword);
+                $maxListenersValue = $config->plan ? $config->plan->max_listeners : 5;
+                $maxListeners = $dom->createElement('max-listeners', $maxListenersValue);
+                $listenerMount->appendChild($maxListeners);
     
-            $listenerMount = $dom->createElement('mount');
-            $listenerMount->setAttribute('type', 'normal');
-            $listenerMountName = $dom->createElement('mount-name', '/' . $config->radio_name_slug);
-            $listenerMount->appendChild($listenerMountName);
-            $listenerRadio = $dom->createElement('radio-id', $config->id);
-            $listenerMount->appendChild($listenerRadio);
-            $listenerUsername = $dom->createElement('username', $config->source);
-            $listenerMount->appendChild($listenerUsername);
-            $listenerPassword = $dom->createElement('password', $config->source_password);
-            $listenerMount->appendChild($listenerPassword);
-            $maxListenersValue = $config->plan ? $config->plan->max_listeners : 5;
-            $maxListeners = $dom->createElement('max-listeners', $maxListenersValue);
-            $listenerMount->appendChild($maxListeners);
-
-            // For genres, use the polymorphic relationship:
-            if ($config->genres()->exists()) {
-                $genreNames = $config->genres()->pluck('id')->toArray();
-                $genreElement = $dom->createElement('genre', implode(',', $genreNames));
-                $listenerMount->appendChild($genreElement);
+                if ($config->fallback_mount) {
+                    $fallback = $dom->createElement('fallback-mount', $config->fallback_mount);
+                    $listenerMount->appendChild($fallback);
+                }
+                if ($config->plan && $config->plan->bitrate) {
+                    $bitrate = $dom->createElement('bitrate', $config->plan->bitrate);
+                    $listenerMount->appendChild($bitrate);
+                }
+                if ($config->genre) {
+                    $genre = $dom->createElement('genre', $config->id);
+                    $listenerMount->appendChild($genre);
+                }
+                if ($config->description) {
+                    $description = $dom->createElement('description', $config->description);
+                    $listenerMount->appendChild($description);
+                }
+                $parentNode->appendChild($listenerMount);
             }
-            if ($config->description) {
-                $description = $dom->createElement('description', $config->description);
-                $listenerMount->appendChild($description);
-            }
-            $parentNode->appendChild($listenerMount);
-        }
     
         $xmlFilePath = '/etc/icecast2/icecast.xml';
     

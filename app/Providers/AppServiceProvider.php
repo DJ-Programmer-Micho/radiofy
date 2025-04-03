@@ -19,6 +19,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->app->singleton('server_ip_no', function () {
+            return '192.168.0.111'; 
+        });
         $this->app->singleton('server_ip', function () {
             return 'http://192.168.0.111'; 
         });

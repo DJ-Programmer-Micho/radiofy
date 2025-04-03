@@ -47,7 +47,7 @@ class RadioLivewire extends Component
             'radioName'      => 'required|string|max:255',
             'location'       => 'nullable|string|max:255',
             'source'         => 'nullable|string|max:255',
-            'source_Password'=> 'nullable|string|max:255',
+            'source_password'=> 'nullable|string|max:255',
             'genre'          => 'required|string',
             'selectedPlanId' => 'required|exists:plans,id',
         ];
@@ -62,7 +62,7 @@ class RadioLivewire extends Component
             'radio_name'       => $this->radioName,
             'location'         => $this->location,
             'source'           => $this->source."@mradiofy",
-            'source_Password'  => $this->sourcePassword,
+            'source_password'  => $this->sourcePassword,
             'genre'            => $this->genre,
             'plan_id'          => $this->selectedPlanId,
         ]);
@@ -99,7 +99,7 @@ class RadioLivewire extends Component
                 'location'         => $this->location,
                 'genre'            => $this->genre,
                 'source'           => $this->source,
-                'source_Password'  => $this->sourcePassword,
+                'source_password'  => $this->sourcePassword,
                 'plan_id'          => $this->selectedPlanId,
             ]);
             // Update Python transcoding service with new configuration.
@@ -172,31 +172,19 @@ class RadioLivewire extends Component
     // Send updated configuration to the Python transcoding service.
     protected function sendRadioConfigUpdate($radio)
     {
-        // Generate listener mount name based on radio name.
-        // For example, "Radio One1" becomes "/radio_one1"
         $mountName = '/' . $radio->radio_name_slug;
-
-        // Construct the ingestion mount URL using a fixed prefix.
-        // For each radio, we want an ingestion mount like: "/source_radio_one1"
         $sourceMount = '/source_' . ltrim($mountName, '/');
-        
-        // Use the bitrate from the associated plan; default to 64 if not set.
         $bitrate = ($radio->plan && $radio->plan->bitrate) ? $radio->plan->bitrate : 64;
-        
-        // Build the configuration payload.
-        // We hardcode the Icecast port (8000) here.
         $config = [
             'source_url' => (string) app('server_ip').':'.app('server_post')."{$sourceMount}",  // e.g., http:///source_radio_one1
             'mount'      => $mountName,  // e.g., /radio_one1
             'bitrate'    => $bitrate,
             'source'     => $radio->source,
             'password'   => $radio->source_password,
-            'host'       => (string) app('server_ip'),
+            'host'       => (string) app('server_ip_no'),
             'port'       => (string) app('server_post'),
         ];
-        
-        // Define the Python service URL.
-        $pythonServiceUrl = app('server_ip').':5000/update_radio_config';
+        $pythonServiceUrl = (string) app('server_ip').':5000/update_radio_config';
 
         try {
             $client = new Client();
@@ -373,7 +361,7 @@ class RadioLivewire extends Component
             
             // If a dynamic source is found, update highest_peak_listeners if needed.
             if ($sourceData) {
-                $currentPeak = (int)$sourceData['listener_peak'] ?? 0;
+                $currentPeak = (int)$sourceData->radio_configuration_profile['listener_peak'] ?? 0;
                 // Access the associated profile (if it exists)
                 if ($radio->radio_configuration_profile) {
                     $storedPeak = (int)$radio->radio_configuration_profile->highest_peak_listeners;
@@ -383,24 +371,7 @@ class RadioLivewire extends Component
                     }
                 }
             }
-            
-            // Build a merged entry.
-            $mergedEntry = [
-                'mount' => $mount,
-                // Use the radio id from the database
-                'radio-id' => $radio->id,
-                // Static configuration from the database can include other fields if needed.
-                'static' => [
-                    'radio_name' => $radio->radio_name,
-                    // You can add more static fields here.
-                ],
-                // Dynamic data from Icecast; if no matching source, dynamic is null.
-                'dynamic' => $sourceData ?: null,
-            ];
-            
-            // For convenience, also produce a flattened entry with the keys we need.
-            // We’ll produce an object like:
-            // { "mount": "/m_radio_iraq", "radio-id": X, "bitrate": "128", "listener_peak": 2, "listeners": 2, "listenurl": "http://localhost:8000/m_radio_iraq" }
+
             if ($sourceData) {
                 $flattened = [
                     'mount' => $mount,
