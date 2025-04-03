@@ -41,8 +41,8 @@ class GenerateLiquidsoapScripts extends Command
         }
 
         // Define encoder details (adjust these as needed)
-        $encoder_ip = '192.168.0.113';
-        $encoder_port = '8000';
+        $encoder_ip = (string) app('server_ip');
+        $encoder_port = (string) app('server_post');
 
         // Loop over each unique bitrate and generate one script per bitrate
         foreach ($uniqueBitrates as $bitrate) {
