@@ -218,15 +218,15 @@ class RadioLivewire extends Component
         $sourceMount = '/source_' . ltrim($mountName, '/');
         $bitrate = ($radio->plan && $radio->plan->bitrate) ? $radio->plan->bitrate : 64;
         $config = [
-            'source_url' => "http://192.168.0.113:8000{$sourceMount}",
+            'source_url' => app('server_ip').':'.app('server_post')."{$sourceMount}",
             'mount'      => $mountName,
             'bitrate'    => $bitrate,
             'source'     => $radio->source,
             'password'   => $radio->source_password,
-            'host'       => '192.168.0.113',
-            'port'       => 8000,
+            'host'       => (string) app('server_ip'),
+            'port'       => app('server_post'),
         ];
-        $pythonServiceUrl = 'http://192.168.0.113:5000/update_radio_config';
+        $pythonServiceUrl = app('server_ip').':5000/update_radio_config';
 
         try {
             $client = new Client();
