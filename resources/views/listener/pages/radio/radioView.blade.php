@@ -75,20 +75,20 @@
                             <div class="p-1">
                                 <h4 class="text-white mb-1">{{ number_format($likesCount) }}</h4>
                                 @if(auth()->guard('listener')->user())
-                                @if($isLiked)
-                                    <button wire:click="toggleLike" class="btn btn-dark p-1">
-                                        <i class="fa-solid fa-heart text-danger" style="font-size: 15px;"></i> Liked
-                                    </button>
+                                    @if($isLiked)
+                                        <button wire:click="toggleLike" class="btn btn-dark p-1">
+                                            <i class="fa-solid fa-heart text-danger" style="font-size: 15px;"></i> Liked
+                                        </button>
+                                    @else
+                                        <button wire:click="toggleLike" class="btn btn-dark p-1">
+                                            <i class="fa-regular fa-heart" style="font-size: 15px;"></i> Like
+                                        </button>
+                                    @endif
                                 @else
-                                    <button wire:click="toggleLike" class="btn btn-dark p-1">
+                                    <a href="{{  route("lis.signin") }}" type="button" class="btn btn-dark p-1">
                                         <i class="fa-regular fa-heart" style="font-size: 15px;"></i> Like
-                                    </button>
+                                    </a>
                                 @endif
-                            @else
-                                <a href="{{  route("lis.signin") }}" type="button" class="btn btn-dark p-1">
-                                    <i class="fa-regular fa-heart" style="font-size: 15px;"></i> Like
-                                </a>
-                            @endif
                             </div>
                         </div>
                     </div>
@@ -289,7 +289,10 @@
                                                             </a>
                                                             </div>
                                                             <div>
-                                                                <img src="{{ asset('/assets/img/verify2.png') }}" alt="" width="15" height="15">
+                                                                @if ($oRadio['verified'] )
+                                                                <img src="{{ asset('/assets/img/verify2.png') }}" alt="" width="15" height="15" class="mx-1"
+                                                                style="max-width:15px; max-height:15px">
+                                                                @endif
                                                             </div>
                                                         </div>
                                                         <p class="m-0">{{ number_format($oRadio['listeners_count']) }} Listeners</p>

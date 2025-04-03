@@ -15,26 +15,18 @@ class PlayerOneLivewire extends Component
     public $currentRadio;
     public $streamUrl;
     public $isPlaying = false;
-    
+    public $isLiked = false;       // New property for like status
+    public $likesCount = 0;        // New property for the total like count
+
     protected $listeners = ['playNowEvent' => 'playNow'];
-    
-    /**
-     * Mount the component.
-     *
-     * If query parameters 'radioId' and 'radioType' exist,
-     * use them; otherwise, fallback to recent radios or a default.
-     *
-     * @param int|null $last_radio
-     * @param string $radioType
-     */
+
     public function mount($last_radio = null, $radioType = 'internal')
     {
-        // Check if query parameters exist.
+        // Determine lastRadio and radioType from query parameters or fallback.
         if (request()->has('radioId') && request()->has('radioType')) {
             $this->lastRadio = request('radioId');
             $this->radioType = request('radioType');
         } else {
-            // Fallback: use listener's recent radio if available.
             $listener = auth()->guard('listener')->user();
             if ($listener && !empty($listener->recent_radios)) {
                 $recentRadios = $listener->recent_radios;
@@ -75,14 +67,128 @@ class PlayerOneLivewire extends Component
         if ($this->currentRadio) {
             $this->dispatchBrowserEvent('auto-play-radio', ['streamUrl' => $this->streamUrl]);
         }
+
+        // Check if the listener has liked the current radio.
+        $user = Auth::guard('listener')->user();
+        if ($user) {
+            $modelType = $this->radioType === 'internal'
+                ? RadioConfiguration::class
+                : ExternalRadioConfiguration::class;
+
+            $this->isLiked = $user->likes()
+                ->where('radioable_id', $this->currentRadio->id)
+                ->where('radioable_type', $modelType)
+                ->exists();
+
+            $this->likesCount = DB::table('likes')
+                ->where('radioable_id', $this->currentRadio->id)
+                ->where('radioable_type', $modelType)
+                ->count();
+            } else {
+                $modelType = $this->radioType === 'internal'
+                ? RadioConfiguration::class
+                : ExternalRadioConfiguration::class;
+                $this->likesCount = DB::table('likes')
+                    ->where('radioable_id', $this->currentRadio->id)
+                    ->where('radioable_type', $modelType)
+                    ->count();
+                
+        }
     }
     
     /**
-     * Handle the play event (for manual play requests).
-     *
-     * @param int|null $radioId
-     * @param string $radioType
+     * Toggle play/pause.
      */
+    public function playNowControl()
+    {
+        if ($this->isPlaying) {
+            $this->dispatchBrowserEvent('pause-radio');
+            $this->isPlaying = false;
+        } else {
+            $this->dispatchBrowserEvent('play-radio', ['streamUrl' => $this->streamUrl]);
+            $this->isPlaying = true;
+        }
+    }
+
+    /**
+     * Toggle the like status.
+     */
+    public function toggleLike()
+    {
+        $user = Auth::guard('listener')->user();
+        if (!$user) {
+            session()->flash('error', 'Please login to like.');
+            return;
+        }
+
+        $modelType = $this->radioType === 'internal' ? RadioConfiguration::class : ExternalRadioConfiguration::class;
+
+        if ($user->likes()
+            ->where('radioable_id', $this->currentRadio->id)
+            ->where('radioable_type', $modelType)
+            ->exists()) {
+            // Remove the like.
+            $user->likes()
+                ->where('radioable_id', $this->currentRadio->id)
+                ->where('radioable_type', $modelType)
+                ->delete();
+            $this->isLiked = false;
+            $this->likesCount = max(0, $this->likesCount - 1);
+        } else {
+            // Add a new like.
+            $user->likes()->create([
+                'radioable_id'   => $this->currentRadio->id,
+                'radioable_type' => $modelType,
+            ]);
+            $this->isLiked = true;
+            $this->likesCount++;
+        }
+    }
+    
+    /**
+     * Update the highest peak listeners count.
+     */
+    protected function updateHighestPeakListeners()
+    {
+        if (!$this->currentRadio) return;
+        $listenerCount = $this->currentRadio->listeners()->count();
+        if ($this->radioType === 'internal') {
+            $profile = $this->currentRadio->radio_configuration_profile;
+        } else {
+            $profile = $this->currentRadio->external_radio_configuration_profile;
+        }
+        if ($profile && $listenerCount > $profile->highest_peak_listeners) {
+            $profile->highest_peak_listeners = $listenerCount;
+            $profile->save();
+        }
+    }
+
+    /**
+     * (Optional) Function to update recent radios if needed.
+     */
+    protected function updateRecentRadio($radioId, $radioType)
+    {
+        $listener = Auth::guard('listener')->user();
+        if (!$listener) return;
+        $recent = $listener->recent_radios ?? [];
+        foreach ($recent as $key => $entry) {
+            if ($entry['radioable_id'] == $radioId && $entry['radioable_type'] == ($radioType === 'internal' 
+                ? RadioConfiguration::class 
+                : ExternalRadioConfiguration::class)) {
+                unset($recent[$key]);
+            }
+        }
+        $recent[] = [
+            'radioable_id'   => $radioId,
+            'radioable_type' => $radioType === 'internal' 
+                ? RadioConfiguration::class 
+                : ExternalRadioConfiguration::class,
+        ];
+        $recent = array_slice($recent, -13);
+        $listener->recent_radios = $recent;
+        $listener->save();
+    }
+
     public function playNow($radioId = null, $radioType = 'internal')
     {
         $this->radioType = $radioType;
@@ -106,13 +212,13 @@ class PlayerOneLivewire extends Component
             $this->dispatchBrowserEvent('play-radio', ['streamUrl' => $this->streamUrl]);
             $this->isPlaying = true;
             $this->updateRecentRadio($radioId, $this->radioType);
-    
+
             // Record the play (if needed)...
-            $listener = auth()->guard('listener')->user();
+            $listener = Auth::guard('listener')->user();
             if ($listener) {
                 $type = $this->radioType === 'internal'
-                    ? \App\Models\RadioConfiguration::class
-                    : \App\Models\ExternalRadioConfiguration::class;
+                    ? RadioConfiguration::class
+                    : ExternalRadioConfiguration::class;
     
                 $lastPlay = DB::table('listener_radios')
                     ->where('listener_id', $listener->id)
@@ -138,69 +244,13 @@ class PlayerOneLivewire extends Component
         }
     }
     
-    /**
-     * Toggle play/pause.
-     */
-    public function playNowControl()
-    {
-        if ($this->isPlaying) {
-            $this->dispatchBrowserEvent('pause-radio');
-            $this->isPlaying = false;
-        } else {
-            $this->dispatchBrowserEvent('play-radio', ['streamUrl' => $this->streamUrl]);
-            $this->isPlaying = true;
-        }
-    }
-    
-    /**
-     * Update recent radios.
-     */
-    protected function updateRecentRadio($radioId, $radioType)
-    {
-        $listener = auth()->guard('listener')->user();
-        if (!$listener) return;
-        $recent = $listener->recent_radios ?? [];
-        foreach ($recent as $key => $entry) {
-            if ($entry['radioable_id'] == $radioId && $entry['radioable_type'] == ($radioType === 'internal' 
-                ? \App\Models\RadioConfiguration::class 
-                : \App\Models\ExternalRadioConfiguration::class)) {
-                unset($recent[$key]);
-            }
-        }
-        $recent[] = [
-            'radioable_id'   => $radioId,
-            'radioable_type' => $radioType === 'internal' 
-                ? \App\Models\RadioConfiguration::class 
-                : \App\Models\ExternalRadioConfiguration::class,
-        ];
-        $recent = array_slice($recent, -13);
-        $listener->recent_radios = $recent;
-        $listener->save();
-    }
-    
-    /**
-     * Update the highest peak listeners count.
-     */
-    protected function updateHighestPeakListeners()
-    {
-        if (!$this->currentRadio) return;
-        $listenerCount = $this->currentRadio->listeners()->count();
-        if ($this->radioType === 'internal') {
-            $profile = $this->currentRadio->radio_configuration_profile;
-        } else {
-            $profile = $this->currentRadio->external_radio_configuration_profile;
-        }
-        if ($profile && $listenerCount > $profile->highest_peak_listeners) {
-            $profile->highest_peak_listeners = $listenerCount;
-            $profile->save();
-        }
-    }
-    
     public function render()
     {
         return view('listener.components.player-one', [
             'current_radio' => $this->currentRadio,
             'isPlaying'     => $this->isPlaying,
+            'isLiked'       => $this->isLiked,
+            'likesCount'    => $this->likesCount,
         ]);
     }
 }

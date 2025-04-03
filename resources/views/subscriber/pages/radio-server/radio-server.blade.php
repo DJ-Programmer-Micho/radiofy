@@ -27,7 +27,7 @@
                                 <div class="row">
                                     <div class="col-12 col-md-4 mb-3">
                                         <label for="address">{{__('BroadCast Type')}}</label>
-                                        <input  type="text"  class="form-control" value="Icecast"  disabled>
+                                        <input  type="text"  class="form-control" value="Icecast 1 & 2"  disabled>
                                         <small class="text-danger">FIXED</small>
                                     </div>
                                     <div class="col-12 col-md-4 mb-3">
@@ -50,7 +50,7 @@
                                         <label for="mountPoint">{{__('Mount Point')}}</label>
                                         <div class="input-group">
                                             <span class="input-group-text px-2">/</span>
-                                            <input  type="text" id="mountInput" class="form-control" wire:model="radioNameSlug"  disabled>
+                                            <input type="text" id="mountInput" class="form-control" wire:model="radioNameSlug"  disabled>
                                             <span class="input-group-text p-0"><button type="button" class="btn btn-link" onclick="copyMount()">COPY</button></span>
                                         </div>
                                         <small class="text-info">Visit Radio Management in order to change</small>
@@ -59,8 +59,8 @@
                                     <div class="col-12 col-md-4 mb-3">
                                         <label for="source">{{__('source')}}</label>
                                         <div class="input-group">
-                                            <span class="input-group-text px-2">/</span>
-                                            <input  type="text" id="source" class="form-control" wire:model="source">
+                                            
+                                            <input type="text" id="source" class="form-control" wire:model="source">
                                             <span class="input-group-text px-2">@mradiofy</span>
                                             <span class="input-group-text p-0"><button type="button" class="btn btn-link" onclick="copySource()">COPY</button></span>
                                         </div>
@@ -120,7 +120,7 @@
 
     function copySource() {
         let input = document.getElementById("source");
-        let value = "/" + input.value + '@mradiofy';
+        let value = input.value + '@mradiofy';
         let temp = document.createElement("textarea");
         temp.value = value;
         document.body.appendChild(temp);

@@ -10,15 +10,40 @@
                                     : asset('assets/logo/mradiofy-logo.png') }}" alt="Logo" />
                     </div>
                     <div class="song-description">
-                        <p class="title">{{ $current_radio->radio_name }}</p>
+                        <p class="title">
+                            <a wire:navigate href="{{ route('listener.radio',['slug' => $current_radio->radio_name_slug])}}" rel="noopener noreferrer">{{ $current_radio->radio_name }}</a>
+                        </p>
                         <p class="artist">
+                            <a wire:navigate href="{{ route('listener.radio',['slug' => $current_radio->radio_name_slug])}}" rel="noopener noreferrer">{{ $current_radio->subscriber->subscriber_profile->first_name }} {{ $current_radio->subscriber->subscriber_profile->last_name }}</a>
+                        </p>
+                        <p class="artist">
+                            @if ($current_radio->verified )
                             Radio Verify 
-                            <img src="{{ asset('/assets/img/verify2.png') }}" alt="Verify" width="15" height="15">
+                            <img src="{{ asset('/assets/img/verify2.png') }}" alt="" width="15" height="15" class="mx-1 mb-2"
+                            style="max-width:15px; max-height:15px">
+                            @endif
                         </p>
                     </div>
                 </div>
                 <div class="icons">
-                    <i class="far fa-heart"></i>
+                    @if(auth()->guard('listener')->user())
+                        @if($isLiked)
+                            <button wire:click="toggleLike" class="btn btn-dark p-1">
+                                <i class="fa-solid fa-heart text-danger" style="font-size: 15px;"></i> <span> Liked</span>
+                                <h6 class="text-white mb-1">{{ number_format($likesCount) }}</h6>
+                            </button>
+                        @else
+                            <button wire:click="toggleLike" class="btn btn-dark p-1">
+                                <i class="fa-regular fa-heart" style="font-size: 15px;"></i> <span> Like</span>
+                                <h6 class="text-white mb-1">{{ number_format($likesCount) }}</h6>
+                            </button>
+                            @endif
+                            @else
+                            <a href="{{  route("lis.signin") }}" type="button" class="btn btn-dark p-1">
+                                <i class="fa-regular fa-heart" style="font-size: 15px;"></i> <span> Like</span>
+                                <h6 class="text-white mb-1">{{ number_format($likesCount) }}</h6>
+                            </a>
+                    @endif
                 </div>
             </div>
             <!-- Control Buttons (center) -->
@@ -29,12 +54,14 @@
             </div>
             <!-- Other Features (right side) -->
             <div class="other-features">
-                <div class="volume-bar">
+                <i class="fa-regular fa-circle-dot fa-fade text-danger"></i>
+                LISTEN LIVE
+                {{-- <div class="volume-bar">
                     <i class="fas fa-volume-down"></i>
                     <div class="progress-bar" id="volume-bar">
                         <div class="progress" id="volume-progress"></div>
                     </div>
-                </div>
+                </div> --}}
             </div>
         </div>
         <!-- Progress bar at the very bottom -->

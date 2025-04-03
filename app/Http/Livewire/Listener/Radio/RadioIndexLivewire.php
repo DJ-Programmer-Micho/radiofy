@@ -83,6 +83,7 @@ class RadioIndexLivewire extends Component
             'radio_name' => $radio->radio_name,
             'radio_name_slug' => $radio->radio_name_slug,
             'listeners_count' => $radio->listeners_count,
+            'verified' => $radio->verified,
             'profile' => [
                 'logo' => $radio->radio_configuration_profile->logo ?? null,
             ],
@@ -96,6 +97,7 @@ class RadioIndexLivewire extends Component
             'radio_name' => $radio->radio_name,
             'radio_name_slug' => $radio->radio_name_slug,
             'listeners_count' => $radio->listeners_count,
+            'verified' => $radio->verified,
             'profile' => [
                 'logo' => $radio->external_radio_configuration_profile->logo ?? null,
             ],
@@ -138,6 +140,21 @@ class RadioIndexLivewire extends Component
                 ->where('radioable_id', $this->radio_id)
                 ->where('radioable_type', $modelType)
                 ->count();
+        } else {
+            $modelType = $this->radioType === 'internal'
+                ? RadioConfiguration::class
+                : ExternalRadioConfiguration::class;
+
+            $this->followersCount = DB::table('follows')
+                ->where('radioable_id', $this->radio_id)
+                ->where('radioable_type', $modelType)
+                ->count();
+
+            $this->likesCount = DB::table('likes')
+                ->where('radioable_id', $this->radio_id)
+                ->where('radioable_type', $modelType)
+                ->count();
+
         }
     }
 

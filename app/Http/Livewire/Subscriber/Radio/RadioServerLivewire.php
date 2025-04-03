@@ -32,7 +32,9 @@ class RadioServerLivewire extends Component
         }
             
         $this->radioName = $config->radio_name;
-        $this->radioNameSlug = $config->radio_name_slug;
+        if ($config->radio_name_slug) {
+            $this->radioNameSlug = 'source_'.$config->radio_name_slug;
+        }
         if ($config->source) {
             $this->source = preg_replace('/@.*$/', '', $config->source);
         }
