@@ -180,17 +180,17 @@ class MyPlanLivewire extends Component
         // Build the configuration payload.
         // We hardcode the Icecast port (8000) here.
         $config = [
-            'source_url' => "http://192.168.0.113:8000{$sourceMount}",  // e.g., http://192.168.0.113:8000/source_radio_one1
+            'source_url' => app('server_ip').':'.app('server_post')."{$sourceMount}",  // e.g., h
             'mount'      => $mountName,  // e.g., /radio_one1
             'bitrate'    => $bitrate,
             'source'     => $radio->source,
             'password'   => $radio->source_password,
-            'host'       => '192.168.0.113',
+            'host'       => (string) app('server_ip'),
             'port'       => 8000,
         ];
         
         // Define the Python service URL.
-        $pythonServiceUrl = 'http://192.168.0.113:5000/update_radio_config';
+        $pythonServiceUrl = app('server_ip').':5000/update_radio_config';
 
         try {
             $client = new Client();

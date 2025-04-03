@@ -225,6 +225,7 @@ class RadioLivewire extends Component
             'password'   => $radio->source_password,
             'host'       => (string) app('server_ip'),
             'port'       => app('server_post'),
+            'port2'       => app('server_post'),
         ];
         $pythonServiceUrl = app('server_ip').':5000/update_radio_config';
 

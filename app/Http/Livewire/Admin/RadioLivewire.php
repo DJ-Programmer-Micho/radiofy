@@ -186,17 +186,17 @@ class RadioLivewire extends Component
         // Build the configuration payload.
         // We hardcode the Icecast port (8000) here.
         $config = [
-            'source_url' => "app('server_ip').':'.app('server_post'){$sourceMount}",  // e.g., http://192.168.0.113:8000/source_radio_one1
+            'source_url' => app('server_ip').':'.app('server_post')."{$sourceMount}",  // e.g., http://192.168.0.113:8000/source_radio_one1
             'mount'      => $mountName,  // e.g., /radio_one1
             'bitrate'    => $bitrate,
             'source'     => $radio->source,
             'password'   => $radio->source_password,
-            'host'       => '192.168.0.113',
+            'host'       => (string) app('server_ip'),
             'port'       => 8000,
         ];
         
         // Define the Python service URL.
-        $pythonServiceUrl = 'http://192.168.0.113:5000/update_radio_config';
+        $pythonServiceUrl = app('server_ip').':5000/update_radio_config';
 
         try {
             $client = new Client();
@@ -338,7 +338,7 @@ class RadioLivewire extends Component
         // 1. Fetch Icecast status JSON.
         try {
             $client = new \GuzzleHttp\Client();
-            $response = $client->get('http://192.168.0.113:8000/status-json.xsl', [
+            $response = $client->get(app('server_ip').':'.app('server_post').'/status-json.xsl', [
                 'timeout' => 10,
             ]);
             $icecastStatus = json_decode($response->getBody(), true);
@@ -418,7 +418,7 @@ class RadioLivewire extends Component
                     'bitrate' => null,
                     'listener_peak' => null,
                     'listeners' => null,
-                    'listenurl' => "http://192.168.0.113:8000" . $mount,
+                    'listenurl' => app('server_ip').':'.app('server_post') . $mount,
                 ];
             }
             
