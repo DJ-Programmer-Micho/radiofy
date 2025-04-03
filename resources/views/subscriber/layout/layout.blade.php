@@ -4,23 +4,27 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="csrf-token" content="{{csrf_token()}}">
-
-        <meta name="theme-color" content="#003465">
+        <meta name="HandheldFriendly" content="True"/>
+        <meta name="mobile-web-app-capable" content="yes">
         <meta name="publisher" content="Michel Shabo">
-        <meta name="mobile-web-app-title" content="Akitu Dashboard">
-        <meta name="author" content="Furat Hariri">
-        <meta name="copyright" content="Akitu Co">
-        <meta name="page-topic" content="e-commerce">
+        <meta name="theme-color" content="#cc0022">
+        <meta name="mobile-web-app-title" content="Mradiofy">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-title" content="Mradiofy">
+        <meta name="apple-mobile-web-app-status-bar-style" content="#cc0022">
+        <meta name='identifier-URL' content='{{url()->current()}}'>
+        <meta name="author" content="Shabo Shabo">
+        <meta name="copyright" content="Mradiofy">
+        <meta name="page-topic" content="online-radio-station">
         <meta name="page-type" content="website">
         <meta name="audience" content="Everyone">
-        <meta name="robots" content="index, follow"> 
-{{-- 
-        <link rel="shortcut icon" href="{{app('logo_72')}}">
-        <link rel="apple-touch-icon-precomposed" sizes="144x144" href="{{app('logo_144')}}">
-        <link rel="apple-touch-icon-precomposed" sizes="114x114" href="{{app('logo_114')}}">
-        <link rel="apple-touch-icon-precomposed" sizes="72x72" href="{{app('logo_72')}}">
-        <link rel="apple-touch-icon-precomposed" sizes="57x57" href="{{app('logo_57')}}">
-        <link rel="apple-touch-icon-precomposed" href="{{app('logo_1024')}}"> --}}
+        <meta name="robots" content="index, follow">
+        <link rel="shortcut icon" href="{{app('app-icon')}}">
+        <link rel="apple-touch-icon-precomposed" sizes="144x144" href="{{app('app-icon')}}">
+        <link rel="apple-touch-icon-precomposed" sizes="114x114" href="{{app('app-icon')}}">
+        <link rel="apple-touch-icon-precomposed" sizes="72x72" href="{{app('app-icon')}}">
+        <link rel="apple-touch-icon-precomposed" sizes="57x57" href="{{app('app-icon')}}">
+        <link rel="apple-touch-icon-precomposed" href="{{app('app-icon')}}">
 
         {{-- <link rel="stylesheet" href="{{asset('main/assets/vendor/line-awesome/line-awesome/line-awesome/css/line-awesome.min.css')}}"> --}}
         <!--Swiper slider css-->

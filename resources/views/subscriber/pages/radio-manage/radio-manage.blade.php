@@ -210,7 +210,6 @@
                             <h5 class="card-title mb-0">{{__('Preview')}}</h5>
                         </div>
                         <div class="card-body">
-                            <h6>{{ env('APP_URL').'/'.$radioNameSlug }}</h6>
                             <h6>{{ app('server_ip').':'.app('server_post').'/'.$radioNameSlug }}</h6>
                             <div class="position-relative banner">
                                 @if($banner)

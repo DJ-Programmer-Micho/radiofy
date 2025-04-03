@@ -1,3 +1,4 @@
+@if (count($sponserRadios) > 0)
 <div style="background-color: #313437" class="rounded p-3">
     <div class="p-3">
         <div class="tab-content tab-content-carousel">
@@ -54,3 +55,6 @@
         </div><!-- End .tab-content -->
     </div><!-- End .container -->
 </div>
+@else
+<div></div>
+@endif

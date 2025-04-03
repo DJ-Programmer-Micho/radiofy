@@ -12,7 +12,6 @@ class MyVerifyLivewire extends Component
     use WithPagination;
     protected $paginationTheme = 'bootstrap';
     
-    // Render / search parameters
     public $search = '';
     public $page = 1;
     
@@ -22,9 +21,9 @@ class MyVerifyLivewire extends Component
 
     public function render()
     {
-        // Query RadioVerification records for the current subscriber,
-        // eager load the associated radio (internal or external)
-        $query = RadioVerification::where('subscriber_id', auth()->guard('subscriber')->id());
+        // Restrict to verifications for the current subscriber
+        $subscriberId = auth()->guard('subscriber')->id();
+        $query = RadioVerification::where('subscriber_id', $subscriberId);
 
         if (!empty($this->search)) {
             // Assuming that the related radio has a "radio_name" field.

@@ -31,7 +31,8 @@ class DashboardLivewire extends Component
     // New counts for social stats.
     public $totalLikes = 0;
     public $totalFollowers = 0;
-    public $totalListeners = 0;
+    public $totalListeners2 = 0;
+    public $nonUniqueListeners2 = 0;
     
     public function mount()
     {
@@ -56,6 +57,9 @@ class DashboardLivewire extends Component
     
     protected function loadListenersData()
     {
+        // Get the authenticated subscriber.
+        $subscriber = auth()->guard('subscriber')->user();
+        
         if ($this->month === 'all') {
             $this->labels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
             $this->uniqueData = array_fill(0, 12, 0);
@@ -63,8 +67,10 @@ class DashboardLivewire extends Component
             $this->highestPeakData = array_fill(0, 12, 0);
             
             $results = DB::table('listener_radios')
-                ->select(DB::raw('MONTH(created_at) as period, COUNT(*) as non_unique, COUNT(DISTINCT listener_id) as unique_listeners'))
-                ->whereYear('created_at', $this->year)
+                ->join('radio_configurations', 'listener_radios.radioable_id', '=', 'radio_configurations.id')
+                ->select(DB::raw('MONTH(listener_radios.created_at) as period, COUNT(*) as non_unique, COUNT(DISTINCT listener_radios.listener_id) as unique_listeners'))
+                ->where('radio_configurations.subscriber_id', $subscriber->id)
+                ->whereYear('listener_radios.created_at', $this->year)
                 ->groupBy('period')
                 ->orderBy('period')
                 ->get();
@@ -72,7 +78,7 @@ class DashboardLivewire extends Component
             foreach ($results as $result) {
                 $index = $result->period - 1;
                 $this->uniqueData[$index] = $result->unique_listeners;
-                // For non-unique, you can subtract the unique listeners if needed:
+                // Optionally subtract unique listeners if you want to show additional plays.
                 $this->nonUniqueData[$index] = $result->non_unique - $result->unique_listeners;
                 $this->highestPeakData[$index] = round($result->non_unique * 1.1);
             }
@@ -84,9 +90,11 @@ class DashboardLivewire extends Component
             $this->highestPeakData = array_fill(0, $daysInMonth, 0);
             
             $results = DB::table('listener_radios')
-                ->select(DB::raw('DAY(created_at) as period, COUNT(*) as non_unique, COUNT(DISTINCT listener_id) as unique_listeners'))
-                ->whereYear('created_at', $this->year)
-                ->whereMonth('created_at', $this->month)
+                ->join('radio_configurations', 'listener_radios.radioable_id', '=', 'radio_configurations.id')
+                ->select(DB::raw('DAY(listener_radios.created_at) as period, COUNT(*) as non_unique, COUNT(DISTINCT listener_radios.listener_id) as unique_listeners'))
+                ->where('radio_configurations.subscriber_id', $subscriber->id)
+                ->whereYear('listener_radios.created_at', $this->year)
+                ->whereMonth('listener_radios.created_at', $this->month)
                 ->groupBy('period')
                 ->orderBy('period')
                 ->get();
@@ -99,7 +107,7 @@ class DashboardLivewire extends Component
             }
         }
         
-        // Emit an event with the updated data so JS can update the charts.
+        // Emit an event with the updated data so that the JavaScript chart can update.
         $this->emit('listenersDataUpdated', [
             'labels' => $this->labels,
             'uniqueData' => $this->uniqueData,
@@ -110,33 +118,52 @@ class DashboardLivewire extends Component
     
     protected function loadRadioCounts()
     {
-        $this->totalInternalRadios = RadioConfiguration::where('status', 1)->count();
-        $this->totalExternalRadios = ExternalRadioConfiguration::where('status', 1)->count();
+        $subscriber = auth()->guard('subscriber')->user();
+        
+        $this->totalInternalRadios = RadioConfiguration::where('subscriber_id', $subscriber->id)
+            ->where('status', 1)
+            ->count();
+            
+        $this->totalExternalRadios = ExternalRadioConfiguration::where('subscriber_id', $subscriber->id)
+            ->where('status', 1)
+            ->count();
     }
     
-    public $totalListeners2 = 0;
-    public $nonUniqueListeners2 = 0;
     protected function loadSocialCounts()
     {
-        // Total Likes: count all rows in likes table.
-        $this->totalLikes = DB::table('likes')->count();
+        $subscriber = auth()->guard('subscriber')->user();
         
-        // Total Followers: count all rows in follows table.
-        $this->totalFollowers = DB::table('follows')->count();
+        // Total Likes for the subscriber's internal radios.
+        $this->totalLikes = DB::table('likes')
+            ->join('radio_configurations', 'likes.radioable_id', '=', 'radio_configurations.id')
+            ->where('radio_configurations.subscriber_id', $subscriber->id)
+            ->where('likes.radioable_type', 'internal')
+            ->count();
         
-        // Total Plays: count all rows in listener_radios table.
-        $totalPlays = DB::table('listener_radios')->count();
+        // Total Followers for the subscriber's internal radios.
+        $this->totalFollowers = DB::table('follows')
+            ->join('radio_configurations', 'follows.radioable_id', '=', 'radio_configurations.id')
+            ->where('radio_configurations.subscriber_id', $subscriber->id)
+            ->where('follows.radioable_type', 'internal')
+            ->count();
         
-        // Unique Listeners: count distinct listener_id in listener_radios table.
-        $uniquePlays = DB::table('listener_radios')->distinct('listener_id')->count('listener_id');
+        // Total Plays (listener_radios) for the subscriber's internal radios.
+        $totalPlays = DB::table('listener_radios')
+            ->join('radio_configurations', 'listener_radios.radioable_id', '=', 'radio_configurations.id')
+            ->where('radio_configurations.subscriber_id', $subscriber->id)
+            ->count();
         
-        // Total Listeners is set to the number of unique listener IDs.
+        // Unique Listeners: count distinct listener_id in listener_radios for these radios.
+        $uniquePlays = DB::table('listener_radios')
+            ->join('radio_configurations', 'listener_radios.radioable_id', '=', 'radio_configurations.id')
+            ->where('radio_configurations.subscriber_id', $subscriber->id)
+            ->distinct('listener_radios.listener_id')
+            ->count('listener_radios.listener_id');
+        
+        // Set the social counts.
         $this->totalListeners2 = $uniquePlays;
-        
-        // Non-Unique Listeners: total plays minus unique plays.
         $this->nonUniqueListeners2 = $totalPlays - $uniquePlays;
     }
-    
     
     public function render()
     {

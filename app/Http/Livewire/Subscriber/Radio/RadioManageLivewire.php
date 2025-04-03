@@ -38,26 +38,36 @@ class RadioManageLivewire extends Component
     public function mount($radio_id)
     {
         $this->radio_id = $radio_id;
+        
+        // Get the authenticated subscriber and ensure we load only their radio config.
+        $subscriber = auth()->guard('subscriber')->user();
+        $config = RadioConfiguration::with(['radio_configuration_profile', 'languages', 'genres'])
+            ->where('subscriber_id', $subscriber->id)
+            ->find($this->radio_id);
 
-        $config = RadioConfiguration::with(['radio_configuration_profile', 'languages', 'genres'])->find($this->radio_id);
-        if ($config) {
-            $this->radioName = $config->radio_name;
-            $this->radioNameSlug = $config->radio_name_slug;
-
-            if ($config->radio_configuration_profile) {
-                $profile = $config->radio_configuration_profile;
-                $this->location = $profile->location;
-                $this->logo = $profile->logo;
-                $this->banner = $profile->banner;
-                $this->description = $profile->description;
-                $this->meta_keywords = $profile->meta_keywords;
-                $this->social_media = json_decode($profile->social_media, true) ?? [];
-                $this->highestPeakListeners = $profile->highest_peak_listeners;
-            }
-
-            $this->selectedGenres = $config->genres->pluck('id')->toArray();
-            $this->selectedLanguages = $config->languages->pluck('id')->toArray();
+        // If no configuration exists for this subscriber, redirect back.
+        if (!$config) {
+            $this->redirectRoute('subs-radios');
+            return;
         }
+        
+        // Populate component properties.
+        $this->radioName = $config->radio_name;
+        $this->radioNameSlug = $config->radio_name_slug;
+
+        if ($config->radio_configuration_profile) {
+            $profile = $config->radio_configuration_profile;
+            $this->location = $profile->location;
+            $this->logo = $profile->logo;
+            $this->banner = $profile->banner;
+            $this->description = $profile->description;
+            $this->meta_keywords = $profile->meta_keywords;
+            $this->social_media = json_decode($profile->social_media, true) ?? [];
+            $this->highestPeakListeners = $profile->highest_peak_listeners;
+        }
+
+        $this->selectedGenres = $config->genres->pluck('id')->toArray();
+        $this->selectedLanguages = $config->languages->pluck('id')->toArray();
 
         $this->languagesOptions = Language::where('status', 1)->orderBy('priority')->get();
         $this->genresOptions = \App\Models\Genre::with(['genreTranslation' => function ($query) {
@@ -90,13 +100,14 @@ class RadioManageLivewire extends Component
         try {
             $validatedData = $this->validate();
 
-            $config = RadioConfiguration::with('radio_configuration_profile')->find($this->radio_id);
+            // Get the authenticated subscriber
+            $subscriber = auth()->guard('subscriber')->user();
+            $config = RadioConfiguration::with('radio_configuration_profile')
+                ->where('subscriber_id', $subscriber->id)
+                ->find($this->radio_id);
             if (!$config) {
-                $this->dispatchBrowserEvent('alert', [
-                    'type' => 'error',
-                    'message' => __('Radio configuration not found.')
-                ]);
-                return;
+                dd('asd');
+                return redirect()->route('subs-radios');
             }
 
             $config->radio_name = $validatedData['radioName'];
@@ -142,7 +153,7 @@ class RadioManageLivewire extends Component
         } catch (\Exception $e) {
             $this->dispatchBrowserEvent('alert', [
                 'type'    => 'error',
-                'message' => __('Err: '.$e)
+                'message' => __('Err: ' . $e->getMessage())
             ]);
         }
     }

@@ -1,4 +1,4 @@
-{{-- NOT USED COMPONENT --}}
+@if (count($followedRadios) > 0)
 <div class="p-3">
     <div class="tab-content tab-content-carousel">
         <h1>The Radios You Following</h1>
@@ -66,3 +66,6 @@
             </div><!-- End .owl-carousel -->
     </div><!-- End .tab-content -->
 </div><!-- End .container -->
+@else
+<div></div>
+@endif

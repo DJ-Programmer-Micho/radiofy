@@ -39,8 +39,8 @@ class ExternalRadioLivewire extends Component
     protected function rules()
     {
         return [
-            'radioName'      => 'required|string|max:255',
-            'streamUrl'         => 'nullable|string|max:255',
+            'radioName' => 'required|string|max:255',
+            'streamUrl' => 'nullable|string|max:255',
         ];
     }
     
@@ -48,9 +48,10 @@ class ExternalRadioLivewire extends Component
     {
         $this->validate();
         
+        $subscriber = auth()->guard('subscriber')->user();
         $radioNameSlug = Str::slug($this->radioName, '-', '');
         $radio = ExternalRadioConfiguration::create([
-            'subscriber_id'   => 1, // Replace with Auth::id() as needed
+            'subscriber_id'   => $subscriber->id,
             'radio_name'      => $this->radioName,
             'radio_name_slug' => $radioNameSlug,
             'stream_url'      => $this->streamUrl,
@@ -61,9 +62,8 @@ class ExternalRadioLivewire extends Component
             'radio_id' => $radio->id,
         ]);
         
-        
         $this->dispatchBrowserEvent('alert', [
-            'type' => 'success',
+            'type'    => 'success',
             'message' => __('External Radio Added Successfully.')
         ]);
         $this->resetInputFields();
@@ -71,19 +71,23 @@ class ExternalRadioLivewire extends Component
     
     public function editRadio(int $id)
     {
-        $radio = ExternalRadioConfiguration::findOrFail($id);
-        $this->radioId        = $radio->id;
-        $this->radioName      = $radio->radio_name;
-        $this->streamUrl      = $radio->stream_url;
-        $this->status         = $radio->status;
+        $subscriber = auth()->guard('subscriber')->user();
+        $radio = ExternalRadioConfiguration::where('subscriber_id', $subscriber->id)
+            ->findOrFail($id);
+        $this->radioId   = $radio->id;
+        $this->radioName = $radio->radio_name;
+        $this->streamUrl = $radio->stream_url;
+        $this->status    = $radio->status;
     }
     
     public function updateRadio()
     {
         $this->validate();
         
+        $subscriber = auth()->guard('subscriber')->user();
         if ($this->radioId) {
-            $radio = ExternalRadioConfiguration::findOrFail($this->radioId);
+            $radio = ExternalRadioConfiguration::where('subscriber_id', $subscriber->id)
+                ->findOrFail($this->radioId);
             $radioNameSlug = Str::slug($this->radioName, '-', '');
             $radio->update([
                 'radio_name'      => $this->radioName,
@@ -92,7 +96,7 @@ class ExternalRadioLivewire extends Component
             ]);
     
             $this->dispatchBrowserEvent('alert', [
-                'type' => 'success',
+                'type'    => 'success',
                 'message' => __('External Radio Updated Successfully.')
             ]);
             $this->resetInputFields();
@@ -106,17 +110,20 @@ class ExternalRadioLivewire extends Component
     
     private function resetInputFields()
     {
-        $this->radioId        = null;
-        $this->radioName      = null;
-        $this->streamUrl       = null;
+        $this->radioId   = null;
+        $this->radioName = null;
+        $this->streamUrl = null;
     }
     
     public function render()
     {
-        $this->activeCount = ExternalRadioConfiguration::where('status', 1)->count();
-        $this->nonActiveCount = ExternalRadioConfiguration::where('status', 0)->count();
+        $subscriber = auth()->guard('subscriber')->user();
+        $this->activeCount = ExternalRadioConfiguration::where('subscriber_id', $subscriber->id)
+            ->where('status', 1)->count();
+        $this->nonActiveCount = ExternalRadioConfiguration::where('subscriber_id', $subscriber->id)
+            ->where('status', 0)->count();
     
-        $query = ExternalRadioConfiguration::query();
+        $query = ExternalRadioConfiguration::where('subscriber_id', $subscriber->id);
     
         if ($this->statusFilter === 'active') {
             $query->where('status', 1);
@@ -151,17 +158,18 @@ class ExternalRadioLivewire extends Component
             return;
         }
 
+        $subscriber = auth()->guard('subscriber')->user();
         if ($this->deleteRadioId) {
-            $radio = ExternalRadioConfiguration::findOrFail($this->deleteRadioId);
+            $radio = ExternalRadioConfiguration::where('subscriber_id', $subscriber->id)
+                ->findOrFail($this->deleteRadioId);
             $radio->delete();
             $this->dispatchBrowserEvent('alert', [
-                'type' => 'success',
+                'type'    => 'success',
                 'message' => __('External Radio Deleted Successfully.')
             ]);
             $this->resetInputFields();
         }
     }
-
 
     public function changeTab($status)
     {

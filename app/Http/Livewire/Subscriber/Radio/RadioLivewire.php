@@ -57,10 +57,13 @@ class RadioLivewire extends Component
     public function addRadio()
     {
         $this->validate();
-        
+
+        // Get the authenticated subscriber
+        $subscriber = auth()->guard('subscriber')->user();
+
         $radioNameSlug = Str::slug($this->radioName, '-', '');
         $radio = RadioConfiguration::create([
-            'subscriber_id'   => 1, // Replace with Auth::id() as needed
+            'subscriber_id'   => $subscriber->id, // Use authenticated subscriber ID
             'radio_name'      => $this->radioName,
             'radio_name_slug' => $radioNameSlug,
             'source'          => $this->source . "@mradiofy",
@@ -78,7 +81,9 @@ class RadioLivewire extends Component
     
     public function editRadio(int $id)
     {
-        $radio = RadioConfiguration::findOrFail($id);
+        $subscriber = auth()->guard('subscriber')->user();
+        $radio = RadioConfiguration::where('subscriber_id', $subscriber->id)
+            ->findOrFail($id);
         $this->radioId        = $radio->id;
         $this->radioName      = $radio->radio_name;
         $this->source         = $radio->source;
@@ -90,8 +95,10 @@ class RadioLivewire extends Component
     {
         $this->validate();
         
+        $subscriber = auth()->guard('subscriber')->user();
         if ($this->radioId) {
-            $radio = RadioConfiguration::findOrFail($this->radioId);
+            $radio = RadioConfiguration::where('subscriber_id', $subscriber->id)
+                ->findOrFail($this->radioId);
             $radioNameSlug = Str::slug($this->radioName, '-', '');
             $radio->update([
                 'radio_name'      => $this->radioName,
@@ -125,10 +132,15 @@ class RadioLivewire extends Component
     
     public function render()
     {
-        $this->activeCount = RadioConfiguration::where('status', 1)->count();
-        $this->nonActiveCount = RadioConfiguration::where('status', 0)->count();
+        $subscriber = auth()->guard('subscriber')->user();
+        $this->activeCount = RadioConfiguration::where('subscriber_id', $subscriber->id)
+            ->where('status', 1)
+            ->count();
+        $this->nonActiveCount = RadioConfiguration::where('subscriber_id', $subscriber->id)
+            ->where('status', 0)
+            ->count();
     
-        $query = RadioConfiguration::query();
+        $query = RadioConfiguration::where('subscriber_id', $subscriber->id);
     
         if ($this->statusFilter === 'active') {
             $query->where('status', 1);
@@ -140,7 +152,9 @@ class RadioLivewire extends Component
             $query->where('radio_name', 'like', '%' . $this->search . '%');
         }
     
-        $tableData = $query->orderBy('created_at', 'ASC')->paginate(10)->withQueryString();
+        $tableData = $query->orderBy('created_at', 'ASC')
+            ->paginate(10)
+            ->withQueryString();
     
         return view('subscriber.pages.radio.radio-table', [
             'tableData' => $tableData,
@@ -149,7 +163,9 @@ class RadioLivewire extends Component
     
     public function updateRadioPython($id)
     {
-        $radio = RadioConfiguration::find($id);
+        $subscriber = auth()->guard('subscriber')->user();
+        $radio = RadioConfiguration::where('subscriber_id', $subscriber->id)
+            ->find($id);
         if ($radio) {
             $this->sendRadioConfigUpdate($radio);
             $this->restartAllRadios();
@@ -182,16 +198,19 @@ class RadioLivewire extends Component
             return;
         }
 
+        $subscriber = auth()->guard('subscriber')->user();
         if ($this->deleteRadioId) {
-            $radio = RadioConfiguration::findOrFail($this->deleteRadioId);
+            $radio = RadioConfiguration::where('subscriber_id', $subscriber->id)
+                ->findOrFail($this->deleteRadioId);
             $radio->delete();
             $this->dispatchBrowserEvent('alert', [
                 'type' => 'success',
-                'message' => __('External Radio Deleted Successfully.')
+                'message' => __('Radio Deleted Successfully.')
             ]);
             $this->resetInputFields();
         }
     }
+    
     // Send configuration update to Python transcoding service.
     protected function sendRadioConfigUpdate($radio)
     {
@@ -252,7 +271,11 @@ class RadioLivewire extends Component
             $parentNode = $dom->documentElement;
         }
     
-        $configs = RadioConfiguration::where('status', 1)->with('plan')->get();
+        $subscriber = auth()->guard('subscriber')->user();
+        $configs = RadioConfiguration::where('subscriber_id', $subscriber->id)
+            ->where('status', 1)
+            ->with('plan')
+            ->get();
     
         foreach ($configs as $config) {
             $ingestionMount = $dom->createElement('mount');
@@ -283,7 +306,6 @@ class RadioLivewire extends Component
 
             // For genres, use the polymorphic relationship:
             if ($config->genres()->exists()) {
-                // For example, join genre names (or IDs) with a comma.
                 $genreNames = $config->genres()->pluck('id')->toArray();
                 $genreElement = $dom->createElement('genre', implode(',', $genreNames));
                 $listenerMount->appendChild($genreElement);
@@ -344,7 +366,11 @@ class RadioLivewire extends Component
     {
         $this->updateIcecastXml();
     
-        $radios = RadioConfiguration::where('status', 1)->with('plan')->get();
+        $subscriber = auth()->guard('subscriber')->user();
+        $radios = RadioConfiguration::where('subscriber_id', $subscriber->id)
+            ->where('status', 1)
+            ->with('plan')
+            ->get();
         foreach ($radios as $radio) {
             $this->sendRadioConfigUpdate($radio);
         }

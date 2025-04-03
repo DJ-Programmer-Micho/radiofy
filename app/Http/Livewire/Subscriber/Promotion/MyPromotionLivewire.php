@@ -87,19 +87,21 @@ class MyPromotionLivewire extends Component
     public function closeModal()
     {
         $this->dispatchBrowserEvent('close-modal');
-        // $this->resetInput();
     }
     
-
     public function render()
     {
-        $query = RadioPromotion::where('subscriber_id', auth()->guard('subscriber')->id());
+        // Restrict to promotions belonging to the current subscriber
+        $subscriberId = auth()->guard('subscriber')->id();
+        $query = RadioPromotion::where('subscriber_id', $subscriberId);
 
         if (!empty($this->search)) {
-            $query->whereHas('promotion', function($q) {
-                $q->where('name', 'like', '%' . $this->search . '%');
-            })->orWhereHas('radioable', function($q) {
-                $q->where('radio_name', 'like', '%' . $this->search . '%');
+            $query->where(function ($query) {
+                $query->whereHas('promotion', function($q) {
+                    $q->where('name', 'like', '%' . $this->search . '%');
+                })->orWhereHas('radioable', function($q) {
+                    $q->where('radio_name', 'like', '%' . $this->search . '%');
+                });
             });
         }
 

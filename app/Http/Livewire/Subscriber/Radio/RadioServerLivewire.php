@@ -20,15 +20,23 @@ class RadioServerLivewire extends Component
     public function mount($radio_id)
     {
         $this->radio_id = $radio_id;
-        $config = RadioConfiguration::find($this->radio_id);
-        if ($config) {
-            $this->radioName = $config->radio_name;
-            $this->radioNameSlug = $config->radio_name_slug;
-            if ($config->source) {
-                $this->source = preg_replace('/@.*$/', '', $config->source);
-            }
-            $this->sourcePassword = $config->source_password;
+        
+        // Get the authenticated subscriber and ensure the radio config belongs to them.
+        $subscriber = auth()->guard('subscriber')->user();
+        $config = RadioConfiguration::where('subscriber_id', $subscriber->id)
+            ->find($this->radio_id);
+            
+        // If not found, redirect back.
+        if (!$config) {
+            return redirect()->route('subs-radios');
         }
+            
+        $this->radioName = $config->radio_name;
+        $this->radioNameSlug = $config->radio_name_slug;
+        if ($config->source) {
+            $this->source = preg_replace('/@.*$/', '', $config->source);
+        }
+        $this->sourcePassword = $config->source_password;
     }
     
     protected function rules()
@@ -53,13 +61,13 @@ class RadioServerLivewire extends Component
             $validatedData['source'] .= '@' . $target;
         }
         
-        $config = RadioConfiguration::find($this->radio_id);
+        // Get the authenticated subscriber.
+        $subscriber = auth()->guard('subscriber')->user();
+        $config = RadioConfiguration::where('subscriber_id', $subscriber->id)
+            ->find($this->radio_id);
+            
         if (!$config) {
-            $this->dispatchBrowserEvent('alert', [
-                'type'    => 'error',
-                'message' => __('Radio configuration not found.')
-            ]);
-            return;
+            return redirect()->route('subs-radios');
         }
         
         $config->source = $validatedData['source'];

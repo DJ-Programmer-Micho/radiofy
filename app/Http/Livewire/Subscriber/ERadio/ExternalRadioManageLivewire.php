@@ -38,25 +38,33 @@ class ExternalRadioManageLivewire extends Component
     public function mount($radio_id)
     {
         $this->radio_id = $radio_id;
+        $subscriber = auth()->guard('subscriber')->user();
 
-        $config = ExternalRadioConfiguration::with(['external_radio_configuration_profile', 'languages', 'genres'])->find($this->radio_id);
-        if ($config) {
-            $this->radioName = $config->radio_name;
-            $this->radioNameSlug = $config->radio_name_slug;
-
-            if ($config->external_radio_configuration_profile) {
-                $profile = $config->external_radio_configuration_profile;
-                $this->location = $profile->location;
-                $this->logo = $profile->logo;
-                $this->banner = $profile->banner;
-                $this->description = $profile->description;
-                $this->meta_keywords = $profile->meta_keywords;
-                $this->social_media = json_decode($profile->social_media, true) ?? [];
-            }
-
-            $this->selectedGenres = $config->genres->pluck('id')->toArray();
-            $this->selectedLanguages = $config->languages->pluck('id')->toArray();
+        $config = ExternalRadioConfiguration::with(['external_radio_configuration_profile', 'languages', 'genres'])
+            ->where('subscriber_id', $subscriber->id)
+            ->find($this->radio_id);
+            
+        if (!$config) {
+            // Redirect back if no configuration is found for this subscriber.
+            session()->flash('error', __('Radio configuration not found.'));
+            return $this->redirectRoute('subs-radios');
         }
+        
+        $this->radioName = $config->radio_name;
+        $this->radioNameSlug = $config->radio_name_slug;
+
+        if ($config->external_radio_configuration_profile) {
+            $profile = $config->external_radio_configuration_profile;
+            $this->location = $profile->location;
+            $this->logo = $profile->logo;
+            $this->banner = $profile->banner;
+            $this->description = $profile->description;
+            $this->meta_keywords = $profile->meta_keywords;
+            $this->social_media = json_decode($profile->social_media, true) ?? [];
+        }
+
+        $this->selectedGenres = $config->genres->pluck('id')->toArray();
+        $this->selectedLanguages = $config->languages->pluck('id')->toArray();
 
         $this->languagesOptions = Language::where('status', 1)->orderBy('priority')->get();
         $this->genresOptions = Genre::with(['genreTranslation' => function ($query) {
@@ -89,13 +97,16 @@ class ExternalRadioManageLivewire extends Component
         try {
             $validatedData = $this->validate();
 
-            $config = ExternalRadioConfiguration::with('external_radio_configuration_profile')->find($this->radio_id);
+            $subscriber = auth()->guard('subscriber')->user();
+            $config = ExternalRadioConfiguration::with('external_radio_configuration_profile')
+                ->where('subscriber_id', $subscriber->id)
+                ->find($this->radio_id);
             if (!$config) {
                 $this->dispatchBrowserEvent('alert', [
-                    'type' => 'error',
+                    'type'    => 'error',
                     'message' => __('Radio configuration not found.')
                 ]);
-                return;
+                return $this->redirectRoute('subs-radios');
             }
 
             $config->radio_name = $validatedData['radioName'];
@@ -136,11 +147,11 @@ class ExternalRadioManageLivewire extends Component
                 'message' => __('Radio configuration updated successfully.')
             ]);
 
-            return redirect()->route('subs-radios');
+            return $this->redirectRoute('subs-radios');
         } catch (\Exception $e) {
             $this->dispatchBrowserEvent('alert', [
                 'type'    => 'error',
-                'message' => __('Err: '.$e)
+                'message' => __('Err: ' . $e->getMessage())
             ]);
         }
     }

@@ -47,21 +47,30 @@ class WatchRadioLivewire extends Component
             $this->watchRadios = collect($radios);
         } else {
             $internalRadios = RadioConfiguration::where('status', 1)
-                ->withCount('listeners')
-                ->inRandomOrder()
-                ->take(5)
-                ->get();
-            $externalRadios = ExternalRadioConfiguration::where('status', 1)
-                ->withCount('listeners')
-                ->inRandomOrder()
-                ->take(5)
-                ->get();
+            ->whereHas('listeners', function ($query) use ($listener) {
+                $query->where('listeners.id', $listener->id);
+            })
+            ->withCount('listeners')
+            ->inRandomOrder()
+            ->take(5)
+            ->get();
+        
+        $externalRadios = ExternalRadioConfiguration::where('status', 1)
+            ->whereHas('listeners', function ($query) use ($listener) {
+                $query->where('listeners.id', $listener->id);
+            })
+            ->withCount('listeners')
+            ->inRandomOrder()
+            ->take(5)
+            ->get();
+        
             $this->watchRadios = $internalRadios->merge($externalRadios);
         }
     }
 
     public function render()
     {
+        // dd(count($this->watchRadios));
         return view('listener.pages.home.watchRadio', [
             'watchRadios' => $this->watchRadios,
         ]);
